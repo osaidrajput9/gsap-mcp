@@ -4,517 +4,14 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
+  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-// ========================================================================================
-// COMPLETE GSAP UNIVERSE DATABASE - Every single method, property, plugin, and technique
-// ========================================================================================
-
-const GSAP_COMPLETE_API = {
-  // Core Animation Methods - Every single one
-  CORE_METHODS: {
-    'gsap.to': {
-      description: 'Animate FROM current values TO specified values - The most common animation method',
-      syntax: 'gsap.to(targets, vars)',
-      parameters: {
-        targets: 'String selector, object, or array of elements to animate',
-        vars: 'Object containing properties to animate and configuration'
-      },
-      examples: {
-        basic: 'gsap.to(".element", { x: 100, duration: 1 })',
-        advanced: 'gsap.to(".elements", { x: 100, rotation: 360, scale: 1.5, duration: 2, ease: "power3.out", stagger: 0.2 })',
-        complex: 'gsap.to(".element", { css: { transform: "translateX(100px) rotate(45deg)" }, duration: 1.5, ease: CustomEase.create("custom", "M0,0 C0.14,0 0.242,0.438 0.272,0.561 0.313,0.728 0.354,0.963 0.362,1 0.37,0.985 0.414,0.961 0.455,0.905 0.51,0.826 0.57,0.73 0.628,0.63 0.709,0.491 0.86,0.413 1,0.413") })'
-      },
-      properties: ['x', 'y', 'z', 'rotation', 'rotationX', 'rotationY', 'rotationZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'opacity', 'alpha', 'autoAlpha'],
-      css_properties: ['left', 'top', 'width', 'height', 'backgroundColor', 'borderRadius', 'fontSize', 'lineHeight'],
-      special_properties: ['duration', 'delay', 'ease', 'repeat', 'yoyo', 'stagger', 'onComplete', 'onUpdate', 'onStart'],
-      performance_tips: ['Use transform properties (x, y, scale, rotation) for GPU acceleration', 'Set force3D: true for complex animations', 'Use will-change CSS property']
-    },
-    'gsap.from': {
-      description: 'Animate FROM specified values TO current values - Perfect for entrance animations',
-      syntax: 'gsap.from(targets, vars)',
-      examples: {
-        entrance: 'gsap.from(".cards", { y: 100, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })',
-        reveal: 'gsap.from(".text", { x: -50, opacity: 0, duration: 0.8, delay: 0.3 })',
-        scale_in: 'gsap.from(".modal", { scale: 0, opacity: 0, duration: 0.5, ease: "back.out(1.7)" })'
-      },
-      use_cases: ['Page load animations', 'Element reveals', 'Modal entrances', 'Card appearances']
-    },
-    'gsap.fromTo': {
-      description: 'Animate FROM specified values TO other specified values - Maximum control',
-      syntax: 'gsap.fromTo(targets, fromVars, toVars)',
-      examples: {
-        precise: 'gsap.fromTo(".element", { x: -100, opacity: 0 }, { x: 100, opacity: 1, duration: 2 })',
-        color_transition: 'gsap.fromTo(".bg", { backgroundColor: "#ff0000" }, { backgroundColor: "#00ff00", duration: 1 })',
-        complex_morph: 'gsap.fromTo(".shape", { scale: 0.5, rotation: 0, borderRadius: "0%" }, { scale: 1.5, rotation: 180, borderRadius: "50%", duration: 2, ease: "elastic.out(1, 0.3)" })'
-      },
-      advantages: ['Explicit start and end values', 'Better for complex animations', 'Clearer intent']
-    },
-    'gsap.set': {
-      description: 'Immediately set properties without animation - Instant transforms',
-      syntax: 'gsap.set(targets, vars)',
-      examples: {
-        initial_state: 'gsap.set(".elements", { x: 0, y: 0, opacity: 1, scale: 1 })',
-        reset: 'gsap.set(".animated", { clearProps: "all" })',
-        setup: 'gsap.set(".cards", { y: 50, opacity: 0, transformOrigin: "center bottom" })'
-      },
-      use_cases: ['Setting initial states', 'Resetting animations', 'Preparing elements', 'Clearing properties']
-    },
-    'gsap.timeline': {
-      description: 'Create powerful animation sequences - The heart of complex animations',
-      syntax: 'gsap.timeline(vars)',
-      methods: ['add', 'to', 'from', 'fromTo', 'set', 'call', 'addLabel', 'play', 'pause', 'reverse', 'restart'],
-      examples: {
-        basic: 'const tl = gsap.timeline(); tl.to(".first", { x: 100 }).to(".second", { y: 100 });',
-        with_labels: 'tl.addLabel("start").to(".element", { x: 100 }).addLabel("middle").to(".element", { y: 100 });',
-        stagger_sequence: 'tl.from(".cards", { y: 100, opacity: 0, stagger: 0.2 }).to(".title", { scale: 1.2 }, "-=0.5");'
-      },
-      positioning: {
-        absolute: '1.5 (start at 1.5 seconds)',
-        relative: '"-=0.5" (start 0.5 seconds before previous ends)',
-        gap: '"+=0.2" (start 0.2 seconds after previous ends)',
-        label: '"myLabel" (start at label position)'
-      }
-    },
-    'gsap.delayedCall': {
-      description: 'Execute function after delay with GSAP timing system',
-      syntax: 'gsap.delayedCall(delay, callback, params, scope)',
-      examples: {
-        basic: 'gsap.delayedCall(2, () => console.log("Hello after 2 seconds"));',
-        with_params: 'gsap.delayedCall(1.5, showMessage, ["Animation complete!", "success"]);',
-        sequence: 'gsap.delayedCall(0.5, startNextAnimation);'
-      }
-    }
-  },
-
-  // Complete Plugin System - ALL plugins with deep knowledge
-  PLUGINS: {
-    'ScrollTrigger': {
-      category: 'FREE',
-      description: 'The most powerful scroll-based animation system ever created',
-      methods: {
-        'ScrollTrigger.create': 'Create individual scroll triggers',
-        'ScrollTrigger.batch': 'Batch process multiple elements for performance',
-        'ScrollTrigger.refresh': 'Recalculate trigger positions',
-        'ScrollTrigger.update': 'Force update all triggers',
-        'ScrollTrigger.kill': 'Remove specific triggers',
-        'ScrollTrigger.killAll': 'Remove all triggers',
-        'ScrollTrigger.getAll': 'Get array of all triggers',
-        'ScrollTrigger.addEventListener': 'Listen for ScrollTrigger events',
-        'ScrollTrigger.matchMedia': 'Responsive scroll triggers'
-      },
-      properties: {
-        trigger: 'Element that triggers the animation',
-        start: 'When animation starts (e.g., "top 80%")',
-        end: 'When animation ends (e.g., "bottom 20%")',
-        scrub: 'Link animation progress to scroll progress',
-        pin: 'Pin element during scroll',
-        snap: 'Snap to specific scroll positions',
-        toggleActions: 'Actions for onEnter, onLeave, onEnterBack, onLeaveBack',
-        animation: 'GSAP animation to control',
-        onEnter: 'Callback when entering trigger area',
-        onLeave: 'Callback when leaving trigger area',
-        onUpdate: 'Callback on every scroll update',
-        markers: 'Show visual markers for debugging'
-      },
-      examples: {
-        basic: `ScrollTrigger.create({
-  trigger: ".section",
-  start: "top 80%",
-  end: "bottom 20%",
-  animation: gsap.from(".element", { y: 100, opacity: 0 }),
-  toggleActions: "play none none reverse"
-})`,
-        scrub: `gsap.to(".parallax", {
-  y: -300,
-  scrollTrigger: {
-    trigger: ".section",
-    start: "top bottom",
-    end: "bottom top",
-    scrub: 1
-  }
-})`,
-        pin: `ScrollTrigger.create({
-  trigger: ".pin-section",
-  start: "top top",
-  end: "bottom top",
-  pin: true,
-  animation: gsap.timeline()
-    .to(".pinned-element", { x: 100 })
-    .to(".pinned-element", { rotation: 360 })
-})`,
-        batch: `ScrollTrigger.batch(".fade-in", {
-  onEnter: elements => gsap.from(elements, { y: 100, opacity: 0, stagger: 0.1 }),
-  onLeave: elements => gsap.to(elements, { opacity: 0.3 }),
-  onEnterBack: elements => gsap.to(elements, { opacity: 1 }),
-  onLeaveBack: elements => gsap.to(elements, { y: 100, opacity: 0 })
-})`
-      },
-      performance_optimization: [
-        'Use ScrollTrigger.batch() for multiple elements',
-        'Set refreshPriority for critical triggers',
-        'Use pin: true sparingly for better performance',
-        'Combine multiple animations into timelines'
-      ]
-    },
-    
-    'SplitText': {
-      category: 'PREMIUM_NOW_FREE',
-      description: 'The ultimate text animation control system - split text into any configuration',
-      syntax: 'new SplitText(targets, vars)',
-      split_types: {
-        chars: 'Split into individual characters',
-        words: 'Split into individual words',
-        lines: 'Split into individual lines',
-        combined: '"chars,words,lines" for maximum control'
-      },
-      properties: {
-        type: 'What to split: "chars", "words", "lines", or combinations',
-        charsClass: 'CSS class for character spans',
-        wordsClass: 'CSS class for word spans',
-        linesClass: 'CSS class for line divs',
-        tag: 'HTML tag to use for splits (default: "div" for lines, "span" for others)',
-        wordsDelimiter: 'Character that defines word boundaries',
-        charsDelimiter: 'Character that defines character boundaries'
-      },
-      methods: {
-        revert: 'Restore original text',
-        split: 'Re-split with new settings'
-      },
-      examples: {
-        char_reveal: `const split = new SplitText(".title", { type: "chars" });
-gsap.from(split.chars, {
-  y: 100,
-  opacity: 0,
-  rotation: 10,
-  duration: 0.8,
-  ease: "power3.out",
-  stagger: 0.02
-});`,
-        word_stagger: `const split = new SplitText(".paragraph", { type: "words" });
-gsap.from(split.words, {
-  y: 50,
-  opacity: 0,
-  duration: 0.6,
-  ease: "power2.out",
-  stagger: 0.1
-});`,
-        line_animation: `const split = new SplitText(".text", { type: "lines" });
-gsap.from(split.lines, {
-  x: -100,
-  opacity: 0,
-  duration: 1,
-  ease: "power3.out",
-  stagger: 0.3
-});`,
-        complex_split: `const split = new SplitText(".complex", { type: "chars,words,lines" });
-const tl = gsap.timeline();
-tl.from(split.lines, { y: 100, opacity: 0, stagger: 0.1 })
-  .from(split.words, { scale: 0, stagger: 0.05 }, "-=0.5")
-  .from(split.chars, { rotation: 90, stagger: 0.01 }, "-=0.8");`
-      },
-      responsive_handling: `// Responsive SplitText
-let split;
-ScrollTrigger.matchMedia({
-  "(min-width: 768px)": function() {
-    split = new SplitText(".responsive-text", { type: "chars" });
-    gsap.from(split.chars, { y: 50, opacity: 0, stagger: 0.02 });
-  },
-  "(max-width: 767px)": function() {
-    if (split) split.revert();
-    gsap.from(".responsive-text", { y: 30, opacity: 0 });
-  }
-});`
-    },
-
-    'DrawSVGPlugin': {
-      category: 'PREMIUM_NOW_FREE',
-      description: 'Animate SVG stroke drawing with pixel-perfect control',
-      properties: {
-        drawSVG: 'Control stroke drawing: "0%" to "100%", "50% 100%", true, false',
-        strokeDasharray: 'Manual control of dash pattern',
-        strokeDashoffset: 'Manual control of dash offset'
-      },
-      examples: {
-        simple_draw: `gsap.from(".path", {
-  drawSVG: "0%",
-  duration: 2,
-  ease: "power2.inOut"
-});`,
-        draw_sequence: `const tl = gsap.timeline();
-tl.from(".path1", { drawSVG: "0%", duration: 1 })
-  .from(".path2", { drawSVG: "0%", duration: 1 }, "-=0.5")
-  .from(".path3", { drawSVG: "0%", duration: 1 }, "-=0.5");`,
-        partial_draw: `gsap.fromTo(".path", 
-  { drawSVG: "50% 50%" },
-  { drawSVG: "0% 100%", duration: 2 }
-);`,
-        reverse_draw: `gsap.to(".path", {
-  drawSVG: "100% 0%",
-  duration: 1.5,
-  ease: "power3.in"
-});`
-      },
-      svg_optimization: [
-        'Use vector-effect="non-scaling-stroke" for consistent stroke width',
-        'Optimize path complexity for smooth animation',
-        'Set stroke-linecap="round" for smoother endpoints'
-      ]
-    },
-
-    'MorphSVGPlugin': {
-      category: 'PREMIUM_NOW_FREE',
-      description: 'Morph between different SVG shapes with intelligent path interpolation',
-      methods: {
-        'MorphSVGPlugin.convertToPath': 'Convert shapes to paths for morphing',
-        'MorphSVGPlugin.pathDataToBezier': 'Convert path data to bezier points',
-        'MorphSVGPlugin.stringToRawPath': 'Parse path string to raw data'
-      },
-      properties: {
-        morphSVG: 'Target shape to morph to',
-        shapeIndex: 'Control which shape to morph to in multi-shape targets',
-        map: 'Custom point mapping for better morphing'
-      },
-      examples: {
-        shape_morph: `gsap.to("#shape1", {
-  morphSVG: "#shape2",
-  duration: 2,
-  ease: "power2.inOut"
-});`,
-        path_morph: `gsap.to(".path", {
-  morphSVG: "M100,100 L200,100 L150,200 Z",
-  duration: 1.5,
-  ease: "elastic.out(1, 0.3)"
-});`,
-        complex_morph: `const tl = gsap.timeline({ repeat: -1, yoyo: true });
-tl.to(".star", { morphSVG: ".circle", duration: 1 })
-  .to(".star", { morphSVG: ".square", duration: 1 })
-  .to(".star", { morphSVG: ".triangle", duration: 1 });`
-      }
-    },
-
-    'MotionPathPlugin': {
-      category: 'PREMIUM_NOW_FREE',
-      description: 'Animate elements along custom paths with precise control',
-      properties: {
-        motionPath: 'Path to follow (SVG path, array of points, or path data)',
-        align: 'Align element to path orientation',
-        alignOrigin: 'Point on element to align with path',
-        autoRotate: 'Auto-rotate element to follow path direction',
-        start: 'Starting position on path (0 to 1)',
-        end: 'Ending position on path (0 to 1)'
-      },
-      examples: {
-        basic_path: `gsap.to(".element", {
-  motionPath: {
-    path: "#path",
-    align: "#path",
-    autoRotate: true,
-    alignOrigin: [0.5, 0.5]
-  },
-  duration: 3,
-  ease: "power2.inOut"
-});`,
-        curved_path: `gsap.to(".car", {
-  motionPath: {
-    path: "M0,0 Q100,-100 200,0 T400,0",
-    autoRotate: 90,
-    align: "self"
-  },
-  duration: 4,
-  ease: "none"
-});`,
-        partial_path: `gsap.to(".element", {
-  motionPath: {
-    path: "#curve",
-    start: 0.2,
-    end: 0.8
-  },
-  duration: 2
-});`
-      }
-    },
-
-    'Draggable': {
-      category: 'PREMIUM_NOW_FREE',
-      description: 'Create advanced drag and drop interactions with physics',
-      types: ['x', 'y', 'x,y', 'rotation', 'top,left', 'scrollTop', 'scrollLeft'],
-      properties: {
-        type: 'What can be dragged',
-        bounds: 'Boundaries for dragging',
-        edgeResistance: 'Resistance at boundaries (0-1)',
-        throwProps: 'Physics-based momentum',
-        snap: 'Snap to grid or custom function',
-        inertia: 'Enable momentum physics'
-      },
-      events: ['onDragStart', 'onDrag', 'onDragEnd', 'onThrowUpdate', 'onThrowComplete'],
-      examples: {
-        basic_drag: `Draggable.create(".draggable", {
-  type: "x,y",
-  bounds: "#container",
-  edgeResistance: 0.65,
-  onDragStart: function() {
-    gsap.to(this.target, { scale: 1.1, duration: 0.2 });
-  },
-  onDragEnd: function() {
-    gsap.to(this.target, { scale: 1, duration: 0.2 });
-  }
-});`,
-        with_physics: `Draggable.create(".physics-drag", {
-  type: "x,y",
-  inertia: true,
-  bounds: window,
-  edgeResistance: 0.65,
-  throwProps: true
-});`,
-        snap_grid: `Draggable.create(".snap-drag", {
-  type: "x,y",
-  snap: {
-    x: function(endValue) { return Math.round(endValue / 50) * 50; },
-    y: function(endValue) { return Math.round(endValue / 50) * 50; }
-  }
-});`
-      }
-    }
-  },
-
-  // Complete Easing System
-  EASING: {
-    basic: {
-      'none': 'Linear motion with no easing',
-      'power1': 'Slight ease (equivalent to cubic-bezier(0.25, 0.1, 0.25, 1))',
-      'power2': 'Medium ease (most commonly used)',
-      'power3': 'Strong ease (recommended for most animations)',
-      'power4': 'Very strong ease (dramatic effect)'
-    },
-    advanced: {
-      'back': 'Overshoots then settles (great for UI elements)',
-      'elastic': 'Bouncy, spring-like motion',
-      'bounce': 'Ball bouncing effect',
-      'circ': 'Circular motion curve',
-      'expo': 'Exponential curve (dramatic acceleration)',
-      'sine': 'Sine wave curve (smooth and natural)'
-    },
-    modifiers: {
-      '.in': 'Ease in (slow start)',
-      '.out': 'Ease out (slow end) - most natural',
-      '.inOut': 'Ease in and out (slow start and end)'
-    },
-    custom_functions: {
-      'back.out(1.7)': 'Back ease with custom overshoot amount',
-      'elastic.out(1, 0.3)': 'Elastic with custom amplitude and period',
-      'steps(5)': 'Stepped animation with 5 steps',
-      'rough({ template: "none.out", strength: 1, points: 20 })': 'Rough, irregular motion'
-    }
-  },
-
-  // Every Animatable Property
-  PROPERTIES: {
-    transform: {
-      position: ['x', 'y', 'z', 'left', 'top', 'right', 'bottom'],
-      scale: ['scale', 'scaleX', 'scaleY', 'scaleZ'],
-      rotation: ['rotation', 'rotationX', 'rotationY', 'rotationZ', 'rotateX', 'rotateY', 'rotateZ'],
-      skew: ['skew', 'skewX', 'skewY'],
-      perspective: ['perspective', 'perspectiveOrigin'],
-      origin: ['transformOrigin', 'xPercent', 'yPercent']
-    },
-    visual: {
-      opacity: ['opacity', 'alpha', 'autoAlpha'],
-      color: ['color', 'backgroundColor', 'borderColor', 'fill', 'stroke'],
-      filters: ['blur', 'brightness', 'contrast', 'grayscale', 'hue-rotate', 'saturate', 'sepia', 'drop-shadow'],
-      clip: ['clipPath', 'clip'],
-      mask: ['mask', 'maskPosition', 'maskSize']
-    },
-    layout: {
-      dimensions: ['width', 'height', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight'],
-      spacing: ['margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft'],
-      padding: ['padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
-      border: ['borderWidth', 'borderRadius', 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomLeftRadius', 'borderBottomRightRadius']
-    },
-    text: {
-      typography: ['fontSize', 'lineHeight', 'letterSpacing', 'wordSpacing'],
-      decoration: ['textIndent', 'textShadow', 'textDecorationColor'],
-      content: ['text', 'innerHTML', 'textContent']
-    },
-    svg: {
-      attributes: ['cx', 'cy', 'r', 'rx', 'ry', 'x1', 'y1', 'x2', 'y2', 'width', 'height'],
-      styling: ['fill', 'stroke', 'strokeWidth', 'strokeDasharray', 'strokeDashoffset', 'opacity']
-    }
-  },
-
-  // Advanced techniques and performance utilities
-  ADVANCED_TECHNIQUES: {
-    'Custom Easing': {
-      description: 'Create custom easing curves for unique animation feel',
-      examples: {
-        rough_ease: 'ease: rough({ template: "none.out", strength: 1, points: 20, taper: "none", randomize: true, clamp: false })',
-        custom_bezier: 'ease: CustomEase.create("custom", "M0,0 C0.14,0 0.242,0.438 0.272,0.561")',
-        bounce_custom: 'ease: CustomBounce.create("myBounce", { strength: 0.7, endAtStart: false, squash: 2 })'
-      }
-    },
-    
-    'Physics Simulations': {
-      description: 'Create realistic physics-based animations',
-      examples: {
-        gravity: 'Physics2DPlugin.create({ velocity: 100, angle: 45, gravity: 500 })',
-        spring: 'ease: "elastic.out(1, 0.3)", duration: 2',
-        pendulum: 'rotation: "+=360", transformOrigin: "50% 0%", ease: "sine.inOut"'
-      }
-    },
-
-    'Data Visualization': {
-      description: 'Animate charts, graphs, and data presentations',
-      examples: {
-        counter: 'gsap.to(obj, { value: 1000, duration: 2, onUpdate: () => element.textContent = Math.round(obj.value) })',
-        progress_ring: 'drawSVG: "0% 75%", rotation: -90, transformOrigin: "center"',
-        bar_chart: 'scaleY: data.value, transformOrigin: "bottom", stagger: 0.1'
-      }
-    },
-    'Smooth Scrolling': {
-      description: 'Integration with Lenis for buttery-smooth scrolling that stays perfectly synced with ScrollTrigger.',
-      examples: {
-        basic_setup: 'const lenis = new Lenis(); lenis.on("scroll", ScrollTrigger.update); gsap.ticker.add((time) => lenis.raf(time * 1000)); gsap.ticker.lagSmoothing(0);',
-        react_usage: 'useGSAP(() => { const lenis = new Lenis(); lenis.on("scroll", ScrollTrigger.update); gsap.ticker.add((t) => lenis.raf(t * 1000)); return () => lenis.destroy(); });',
-        scroll_to: 'lenis.scrollTo("#target-id", { offset: -100, duration: 1.5 });'
-      }
-    },
-  },
-
-  // Performance monitoring utilities
-  PERFORMANCE_UTILS: {
-    fps_monitor: `const fpsMonitor = {
-    fps: 0,
-    frames: 0,
-    lastTime: performance.now(),
-    
-    update() {
-      this.frames++;
-      const currentTime = performance.now();
-      if (currentTime >= this.lastTime + 1000) {
-        this.fps = Math.round((this.frames * 1000) / (currentTime - this.lastTime));
-        this.frames = 0;
-        this.lastTime = currentTime;
-        console.log('FPS:', this.fps);
-      }
-      requestAnimationFrame(() => this.update());
-    }
-  };`,
-    
-    memory_tracker: `const memoryTracker = {
-    track() {
-      if (performance.memory) {
-        const memory = performance.memory;
-        console.log({
-          used: Math.round(memory.usedJSHeapSize / 1048576) + ' MB',
-          total: Math.round(memory.totalJSHeapSize / 1048576) + ' MB',
-          limit: Math.round(memory.jsHeapSizeLimit / 1048576) + ' MB'
-        });
-      }
-    }
-  };`
-  }
-};
+import { GSAP_VERSION, SKILLS_SOURCE } from './src/data/skills.js';
+import { SKILL_RESOURCES, readSkillResource } from './src/resources/skills.js';
+import { gsapApiExpert, type ApiExpertLevel } from './src/tools/api-expert.js';
 
 // ========================================================================================
 // ADVANCED INTENT ANALYSIS ENGINE - Understands natural language perfectly
@@ -1322,14 +819,43 @@ document.querySelectorAll(".hover-element").forEach(element => {
 const server = new Server(
   {
     name: 'gsap-mcp',
-    version: '1.1.0',
+    version: '2.0.0',
   },
   {
     capabilities: {
+      resources: {},
       tools: {},
     },
   }
 );
+
+// ========================================================================================
+// RESOURCES - The official GreenSock skills, served verbatim
+// ========================================================================================
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: SKILL_RESOURCES.map(({ uri, name, title, description, mimeType }) => ({
+    uri,
+    name,
+    title,
+    description,
+    mimeType,
+  })),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const resource = readSkillResource(request.params.uri);
+  if (!resource) {
+    throw new Error(
+      `Unknown resource: ${request.params.uri}. Available: ${SKILL_RESOURCES.map((r) => r.uri).join(', ')}`,
+    );
+  }
+  return {
+    contents: [
+      { uri: resource.uri, mimeType: resource.mimeType, text: resource.text },
+    ],
+  };
+});
 
 // Define all tools
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -1580,118 +1106,14 @@ Just describe what you want in natural language and I'll generate production-rea
 
       case 'get_gsap_api_expert': {
         const apiElement = args?.api_element as string;
-        const level = args?.level as string || 'advanced';
-        
+        const level = (args?.level as ApiExpertLevel) || 'advanced';
+
         if (!apiElement) {
           throw new Error('API element is required');
         }
 
-        const api = apiElement.toLowerCase();
-        let result = `# 🎯 GSAP API Expert: ${apiElement}\n\n`;
-
-        // Search through comprehensive API database
-        if (GSAP_COMPLETE_API.CORE_METHODS[api as keyof typeof GSAP_COMPLETE_API.CORE_METHODS]) {
-          const method = GSAP_COMPLETE_API.CORE_METHODS[api as keyof typeof GSAP_COMPLETE_API.CORE_METHODS];
-          result += `**Type**: Core Animation Method\n`;
-          result += `**Description**: ${method.description}\n`;
-          result += `**Syntax**: \`${method.syntax}\`\n\n`;
-          
-          if ('parameters' in method && method.parameters) {
-            result += `## Parameters\n`;
-            for (const [param, desc] of Object.entries(method.parameters)) {
-              result += `- **${param}**: ${desc}\n`;
-            }
-            result += '\n';
-          }
-          
-          result += `## Examples\n\n`;
-          for (const [type, example] of Object.entries(method.examples)) {
-            result += `### ${type.charAt(0).toUpperCase() + type.slice(1)}\n`;
-            result += `\`\`\`javascript\n${example}\n\`\`\`\n\n`;
-          }
-          
-          if ('properties' in method && method.properties) {
-            result += `## Animatable Properties\n`;
-            result += `${method.properties.join(', ')}\n\n`;
-          }
-          
-          if ('performance_tips' in method && method.performance_tips) {
-            result += `## Performance Tips\n`;
-            method.performance_tips.forEach((tip: string) => {
-              result += `- ${tip}\n`;
-            });
-          }
-        } else if (GSAP_COMPLETE_API.PLUGINS[apiElement as keyof typeof GSAP_COMPLETE_API.PLUGINS] || GSAP_COMPLETE_API.PLUGINS[apiElement.replace('Plugin', '') as keyof typeof GSAP_COMPLETE_API.PLUGINS]) {
-          const pluginKey = GSAP_COMPLETE_API.PLUGINS[apiElement as keyof typeof GSAP_COMPLETE_API.PLUGINS] ? apiElement : apiElement.replace('Plugin', '');
-          const plugin = GSAP_COMPLETE_API.PLUGINS[pluginKey as keyof typeof GSAP_COMPLETE_API.PLUGINS];
-          
-          result += `**Type**: Plugin (${plugin.category})\n`;
-          result += `**Description**: ${plugin.description}\n\n`;
-          
-          if ('methods' in plugin && plugin.methods) {
-            result += `## Methods\n`;
-            if (typeof plugin.methods === 'object') {
-              for (const [method, desc] of Object.entries(plugin.methods)) {
-                result += `- **${method}**: ${desc}\n`;
-              }
-            } else if (Array.isArray(plugin.methods)) {
-              (plugin.methods as string[]).forEach((method: string) => {
-                result += `- ${method}\n`;
-              });
-            }
-            result += '\n';
-          }
-          
-          if ('properties' in plugin && plugin.properties) {
-            result += `## Properties\n`;
-            if (typeof plugin.properties === 'object' && !Array.isArray(plugin.properties)) {
-              for (const [prop, desc] of Object.entries(plugin.properties)) {
-                result += `- **${prop}**: ${desc}\n`;
-              }
-            } else if (Array.isArray(plugin.properties)) {
-              (plugin.properties as string[]).forEach((prop: string) => {
-                result += `- ${prop}\n`;
-              });
-            }
-            result += '\n';
-          }
-          
-          if ('examples' in plugin && plugin.examples) {
-            result += `## Examples\n\n`;
-            for (const [name, code] of Object.entries(plugin.examples)) {
-              result += `### ${name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}\n`;
-              result += `\`\`\`javascript\n${code}\n\`\`\`\n\n`;
-            }
-          }
-          
-          if ('performance_optimization' in plugin && plugin.performance_optimization) {
-            result += `## Performance Optimization\n`;
-            (plugin.performance_optimization as string[]).forEach((tip: string) => {
-              result += `- ${tip}\n`;
-            });
-          }
-        } else {
-          result += `API element "${apiElement}" not found in the comprehensive database.\n\n`;
-          result += `## Available Core Methods:\n`;
-          result += Object.keys(GSAP_COMPLETE_API.CORE_METHODS).join(', ') + '\n\n';
-          result += `## Available Plugins:\n`;
-          result += Object.keys(GSAP_COMPLETE_API.PLUGINS).join(', ') + '\n\n';
-          result += `## Did you mean?\n`;
-          
-          // Simple fuzzy matching
-          const allApis = [...Object.keys(GSAP_COMPLETE_API.CORE_METHODS), ...Object.keys(GSAP_COMPLETE_API.PLUGINS)];
-          const suggestions = allApis.filter(api => 
-            api.toLowerCase().includes(apiElement.toLowerCase()) || 
-            apiElement.toLowerCase().includes(api.toLowerCase())
-          );
-          
-          if (suggestions.length > 0) {
-            result += `Possible matches: ${suggestions.join(', ')}`;
-          }
-        }
-
         return {
-          content: [{ type: 'text', text: result }]
+          content: [{ type: 'text', text: gsapApiExpert({ api_element: apiElement, level }) }]
         };
       }
 
@@ -2671,10 +2093,11 @@ window.addEventListener('load', () => {
 // Start the server with bulletproof error handling
 async function main() {
   try {
-    console.error('🎯 INFO: Starting Ultimate GSAP MCP Server...');
-    console.error('🎉 INFO: All GSAP plugins now 100% FREE thanks to Webflow!');
-    console.error('🧠 INFO: AI Intent Analysis Engine loaded');
-    console.error('⚡ INFO: Production-ready code generators initialized');
+    console.error('INFO: Starting GSAP MCP server...');
+    console.error(
+      `INFO: Loaded ${SKILL_RESOURCES.length} resources from the official GreenSock skills ` +
+        `(${SKILLS_SOURCE.commit.slice(0, 7)}, GSAP ${GSAP_VERSION})`,
+    );
     
     const transport = new StdioServerTransport();
     console.error('🔌 INFO: Transport initialized: stdio');
