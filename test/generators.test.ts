@@ -129,6 +129,23 @@ describe('generated snippets', () => {
     }
   });
 
+  // React rejects a style string ("The `style` prop expects a mapping from
+  // style properties to values"), so a pattern with inline styles produced a
+  // component that threw on render. Found by mounting the output in a real
+  // React app; guarded statically here.
+  it.each(combinations)('%s / %s uses valid attribute syntax', (pattern, framework) => {
+    const code = renderPattern(getPattern(pattern)!, framework);
+    const isJsx = framework === 'react' || framework === 'nextjs';
+
+    if (isJsx) {
+      expect(code).not.toMatch(/\bstyle="/);
+      expect(code).not.toMatch(/\bclass="/);
+      expect(code).not.toMatch(/\bfor="/);
+    } else {
+      expect(code).not.toMatch(/\bclassName=/);
+    }
+  });
+
   it('registers useGSAP for React and not elsewhere', () => {
     for (const pattern of PATTERNS) {
       expect(renderPattern(getPattern(pattern)!, 'react')).toContain(

@@ -51,9 +51,41 @@ function classAttr(framework: Framework): string {
   return isReact(framework) ? 'className' : 'class';
 }
 
-/** Closes a void-ish div for the template language in play. */
+/**
+ * Converts an HTML `style="a: b; c: d"` attribute to JSX's object form.
+ *
+ * React rejects a style string outright ("The `style` prop expects a mapping
+ * from style properties to values, not a string"), so a pattern carrying inline
+ * styles produced a component that threw on render. Found by mounting the
+ * generated components in a real React app.
+ */
+function styleToJsx(declarations: string): string {
+  const entries = declarations
+    .split(';')
+    .map((declaration) => declaration.trim())
+    .filter(Boolean)
+    .map((declaration) => {
+      const separator = declaration.indexOf(':');
+      const property = declaration.slice(0, separator).trim();
+      const value = declaration.slice(separator + 1).trim();
+      const camel = property.replace(/-([a-z])/g, (_, letter: string) =>
+        letter.toUpperCase(),
+      );
+      return `${camel}: "${value}"`;
+    });
+
+  return `{{ ${entries.join(', ')} }}`;
+}
+
+/** Rewrites HTML attributes to the template language in play. */
 function markup(framework: Framework, body: string): string {
-  return body.replace(/\bclass=/g, `${classAttr(framework)}=`);
+  const withClasses = body.replace(/\bclass=/g, `${classAttr(framework)}=`);
+  if (!isReact(framework)) return withClasses;
+
+  return withClasses.replace(
+    /\bstyle="([^"]*)"/g,
+    (_, declarations: string) => `style=${styleToJsx(declarations)}`,
+  );
 }
 
 const scrollReveal: Pattern = {
