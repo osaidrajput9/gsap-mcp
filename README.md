@@ -228,7 +228,7 @@ npm test          # builds first, then runs Vitest
 npm run test:watch
 ```
 
-720 tests. The suite parses all 72 pattern × framework combinations,
+727 tests. The suite parses all 72 pattern × framework combinations,
 round-trips the generated code back through `validate_gsap_code`, and drives
 the built server over a real stdio subprocess. GreenSock's own `examples/` are
 vendored as fixtures: if the validator reports an error on that code, the
@@ -263,6 +263,11 @@ is the only thing confining selectors there — verified by removing it, at whic
 point the decoy animates and the test fails.
 
 All six frameworks are now verified by execution, not by construction.
+
+`test/line-endings.test.ts` converts the vendored skills to CRLF and asserts
+every parser still finds its sections and rules. Git on Windows checks files
+out that way by default, and JavaScript's `.` does not match `\r`, so a
+Linux-only suite cannot see the difference.
 
 This package is `private: true` and publishes nowhere.
 
