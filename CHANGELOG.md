@@ -1,3 +1,18 @@
+### Tests (Vue and Svelte verification)
+
+* **vue/svelte:** new `test/vue-svelte-browser.test.ts` compiles each generated
+  Vue single-file component with `@vue/compiler-sfc` and each Svelte component
+  with the Svelte 5 compiler, then mounts them in Chromium. Asserts selector
+  scoping against a decoy outside the component, ScrollTrigger creation and
+  resolution, teardown on unmount, reduced motion, and that all eleven runnable
+  patterns mount without errors.
+* Confirms `mm.add()`'s scope argument is load-bearing for Vue and Svelte,
+  which have no `useGSAP`: removing it makes the decoy animate to ~0.66 opacity
+  and the test fails. In React the same argument is redundant because
+  `useGSAP({ scope })` already covers it.
+* No bugs found in the Vue or Svelte output.
+* 708 → 720 tests. All six frameworks are now verified by execution.
+
 ### Tests (acceptance)
 
 * **acceptance:** new `test/acceptance-hero.test.ts` exercises the whole
