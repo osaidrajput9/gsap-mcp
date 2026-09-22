@@ -1,0 +1,120 @@
+# Weekly refresh of the vendored official GreenSock skills.
+#
+# Opens a pull request when github.com/greensock/gsap-skills has changed, and
+# does nothing otherwise. It builds and tests the refreshed copy first, so a
+# sync that breaks the server is never proposed.
+#
+# This workflow publishes NOTHING. It has no registry configuration and no
+# access to any npm credential; its only write permissions are to this
+# repository's branches and pull requests. Do not add a publish step here.
+name: Sync official GSAP skills
+
+on:
+  schedule:
+    # Mondays at 06:17 UTC. Off the hour so it is not queued with everything
+    # else scheduled on the hour.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-skills
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Check for upstream skill changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+
+      - name: Checkout greensock/gsap-skills
+        uses: actions/checkout@v4
+        with:
+          repository: greensock/gsap-skills
+          path: .upstream-gsap-skills
+          # Full history so the sync script can read the commit date.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy the latest skills into src/data/skills
+        run: node scripts/sync-skills.mjs --from .upstream-gsap-skills
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet -- src/data/skills; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No upstream skill changes."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            {
+              echo 'summary<<SUMMARY_EOF'
+              git diff --stat -- src/data/skills
+              echo SUMMARY_EOF
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      # Run against the refreshed skills. A skill rewrite upstream can change
+      # trigger terms or section headings, which the routing and validator
+      # tests assert on.
+      - name: Build and test with the refreshed skills
+        if: steps.diff.outputs.changed == 'true'
+        run: npm test
+
+      - name: Open a pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUMMARY: ${{ steps.diff.outputs.summary }}
+        run: |
+          set -euo pipefail
+
+          UPSTREAM_SHA="$(git -C .upstream-gsap-skills rev-parse --short HEAD)"
+          BRANCH="chore/sync-gsap-skills-${UPSTREAM_SHA}"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "Branch $BRANCH already exists; a pull request is already open for this upstream commit."
+            exit 0
+          fi
+
+          git checkout -b "$BRANCH"
+          git add src/data/skills
+          git commit -m "chore(skills): sync official GSAP skills to ${UPSTREAM_SHA}
+
+Automated refresh of the vendored copy of github.com/greensock/gsap-skills.
+Build and tests passed against the refreshed skills."
+
+          git push -u origin "$BRANCH"
+
+          gh pr create \
+            --title "chore(skills): sync official GSAP skills to ${UPSTREAM_SHA}" \
+            --body "Automated weekly refresh of the vendored official GreenSock skills.
+
+Upstream: https://github.com/greensock/gsap-skills/commit/${UPSTREAM_SHA}
+
+\`\`\`
+${SUMMARY}
+\`\`\`
+
+\`npm test\` passed against the refreshed skills. Worth a look at the diff
+anyway: the routing tests and validate_gsap_code rules quote these files, so
+a rewrite upstream can change which skill a topic resolves to.
+
+This workflow does not publish anything."
