@@ -15,10 +15,20 @@ Targets **GSAP 3.15.0**, the release the vendored skills are written against.
 
 ## Install
 
-Published on npm as **[`@osaidrajput9/gsap-mcp`][npm]**, so clients install a
+Published on npm as **[`@osaidrajput9/gsap-mcp`][npm]**, so a client fetches a
 prebuilt package — no compile step on first launch.
 
 [npm]: https://www.npmjs.com/package/@osaidrajput9/gsap-mcp
+
+> **Don't `npm install` this into your project.** It is a tool your coding
+> agent runs, not a library your app imports, so adding it to `package.json`
+> only drags it through every CI run and deploy.
+>
+> Installing it also registers nothing. An MCP server exists only where a
+> config file names a command to run — nothing scans `node_modules` looking
+> for one, and a `bin` entry does not announce itself. **The config below is
+> the entire installation**, and `npx -y` fetches the package the first time
+> the server starts.
 
 ### Claude Code, per project (works in cloud sessions)
 
