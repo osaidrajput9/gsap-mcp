@@ -1,3 +1,24 @@
+### Published
+
+* **npm:** released as `@osaidrajput9/gsap-mcp@2.0.0`. `private: true` is
+  removed and `publishConfig.access` is set to `public`, since scoped packages
+  default to restricted. Install lines throughout the README now name the
+  package rather than `github:osaidrajput9/gsap-mcp`; the git route still
+  works and is documented as the way to track `main`.
+* **startup:** 5.6s cold and 0.92s warm from the registry, against 12.9s and
+  2.1s from git, where `prepare` compiles TypeScript on the client's machine.
+* **release process:** stays manual. `.github/workflows/` holds no publish
+  step and no registry credential, and `test/workflows.test.ts` fails if
+  either appears. `prepublishOnly` runs the full suite before any upload.
+* **verified against the published tarball:** the package was published from a
+  Windows checkout, so `dist/data/skills/**` ships with CRLF line endings.
+  Driving the installed server over stdio confirms the loader normalisation
+  holds — `get_gsap_api_expert`, `debug_animation_issue` and
+  `optimize_for_performance` all return real skill content, and
+  `gsap://skills/gsap-core` reads back with no carriage returns. Without the
+  CRLF fix this release would have been broken on every platform, because the
+  carriage returns are baked into the tarball rather than produced at checkout.
+
 ### Bug Fixes (Windows)
 
 * **skills:** every parser broke on a Windows checkout. Git converts these

@@ -1,7 +1,9 @@
 {
   "name": "@osaidrajput9/gsap-mcp",
   "version": "2.0.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "GSAP MCP server - GSAP animation guidance and code generation backed by the official GreenSock agent skills",
   "keywords": [
     "gsap",
