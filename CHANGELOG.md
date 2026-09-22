@@ -1,3 +1,32 @@
+### Bug Fixes (React verification)
+
+* **generators:** inline `style="..."` attributes in a pattern's markup are now
+  converted to JSX's object form for React and Next.js. React rejects a style
+  string outright ("The `style` prop expects a mapping from style properties to
+  values, not a string"), so the `data-viz` component threw on render. Found by
+  mounting the generated components in a real React app.
+
+### Tests (React verification)
+
+* **react:** new `test/react-browser.test.ts` bundles each generated component
+  into a real React 19 app with `@gsap/react` and mounts it in Chromium.
+  Asserts selector scoping against a decoy rendered outside the component,
+  ScrollTrigger scoping and resolution, full teardown on unmount, contextSafe
+  pointer handlers, and both prefers-reduced-motion branches.
+* **generators:** static assertion that JSX output never contains `class="`,
+  `style="` or `for="`, and that non-JSX output never contains `className=`.
+* 616 → 696 tests.
+
+Two inferences the official skills do not state were settled by measurement
+rather than assumption:
+
+* `useGSAP({ scope })` **does** confine selector text inside a
+  `gsap.matchMedia()` handler. Verified by removing all scoping, at which point
+  the decoy animates and the test fails.
+* `mm.add()`'s third scope argument is therefore **redundant in React**,
+  though it is documented by gsap-core and remains load-bearing for Vue,
+  Svelte and vanilla, which have no `useGSAP`. It is kept for consistency.
+
 ### Bug Fixes (post-2.0.0 merge)
 
 * **generators:** the scoped container is now a wrapper *around* a pattern's

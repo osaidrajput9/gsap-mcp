@@ -177,7 +177,7 @@ npm test          # builds first, then runs Vitest
 npm run test:watch
 ```
 
-616 tests. The suite parses all 72 pattern × framework combinations,
+696 tests. The suite parses all 72 pattern × framework combinations,
 round-trips the generated code back through `validate_gsap_code`, and drives
 the built server over a real stdio subprocess. GreenSock's own `examples/` are
 vendored as fixtures: if the validator reports an error on that code, the
@@ -190,6 +190,12 @@ splits and masks, both `prefers-reduced-motion` branches run, and every
 ScrollTrigger resolves a real trigger element. It skips itself when no
 Chromium is available, so the rest of the suite runs anywhere; force the skip
 with `GSAP_MCP_SKIP_BROWSER_TESTS=1`.
+
+`test/react-browser.test.ts` goes further for React: it bundles each generated
+component into a real React 19 app and mounts it. The key check is a decoy —
+markup carrying the same classes rendered *outside* the component. A scoped
+selector must never reach it. That, plus unmount teardown and `contextSafe`
+handlers, is what the static checks cannot establish.
 
 This package is `private: true` and publishes nowhere.
 
