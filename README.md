@@ -64,12 +64,6 @@ claude mcp add gsap -- npx -y github:osaidrajput9/gsap-mcp
 }
 ```
 
-### Claude Code
-
-```bash
-claude mcp add gsap -- npx -y github:osaidrajput9/gsap-mcp
-```
-
 ### Continue.dev
 
 `~/.continue/config.yaml`:
