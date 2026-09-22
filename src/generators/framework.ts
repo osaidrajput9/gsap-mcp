@@ -232,10 +232,9 @@ function renderReact(request: SnippetRequest): string {
     '  );',
     '',
     '  return (',
-    indent(request.markup ?? '<div />', 4).replace(
-      '<div',
-      '<div ref={container}',
-    ),
+    `    <div ref={container} className="${containerClass(request.componentName)}">`,
+    indent(request.markup ?? '<div />', 6),
+    '    </div>',
     '  );',
     '}',
   ]);
@@ -279,10 +278,9 @@ function renderVue(request: SnippetRequest): string {
     '</script>',
     '',
     '<template>',
-    indent(request.markup ?? '<div></div>', 2).replace(
-      '<div',
-      '<div ref="container"',
-    ),
+    `  <div ref="container" class="${containerClass(request.componentName)}">`,
+    indent(request.markup ?? '<div></div>', 4),
+    '  </div>',
     '</template>',
   ]);
 }
@@ -321,10 +319,9 @@ function renderSvelte(request: SnippetRequest): string {
     '  });',
     '</script>',
     '',
-    (request.markup ?? '<div></div>').replace(
-      '<div',
-      '<div bind:this={container}',
-    ),
+    `<div bind:this={container} class="${containerClass(request.componentName)}">`,
+    indent(request.markup ?? '<div></div>', 2),
+    '</div>',
   ]);
 }
 
@@ -336,7 +333,9 @@ function renderVanilla(request: SnippetRequest): string {
     '',
     registerLine(request.framework, plugins),
     '',
-    `const container = document.querySelector(".${kebab(request.componentName)}");`,
+    `// Wrap this pattern's markup in a container so selectors can be scoped to it:`,
+    `//   <div class="${containerClass(request.componentName)}"> ...markup... </div>`,
+    `const container = document.querySelector(".${containerClass(request.componentName)}");`,
     '',
     request.preamble ? request.preamble.trimEnd() : null,
     request.preamble ? '' : null,
@@ -353,6 +352,20 @@ function renderVanilla(request: SnippetRequest): string {
     '// On teardown (route change, component removal):',
     '// mm.revert();',
   ]);
+}
+
+/**
+ * Class for the scoped container element.
+ *
+ * The container must be a strict *ancestor* of everything a pattern selects.
+ * A scoped selector never matches the scope element itself, so putting the
+ * scope on the markup root silently breaks any `trigger` that points at that
+ * root: ScrollTrigger resolves it to null and quietly falls back to the
+ * tween's own target. The `-root` suffix guarantees the wrapper class can
+ * never collide with a class the pattern uses.
+ */
+export function containerClass(componentName: string): string {
+  return `${kebab(componentName)}-root`;
 }
 
 export function kebab(name: string): string {

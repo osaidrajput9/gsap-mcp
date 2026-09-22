@@ -1,3 +1,30 @@
+### Bug Fixes (post-2.0.0 merge)
+
+* **generators:** the scoped container is now a wrapper *around* a pattern's
+  markup instead of being placed on the markup root. Two bugs came from that,
+  both found by running the generated code in a real browser:
+  - `horizontal-scroll` crashed in the vanilla output. The shell queried
+    `.horizontal-scroll` while the markup root was `.h-wrapper`, so the
+    container was `null` and `track.scrollWidth` threw. Seven of twelve
+    patterns had this mismatch; the other six silently lost scoping instead of
+    failing.
+  - A scoped selector never matches the scope element itself, so any pattern
+    whose ScrollTrigger `trigger` pointed at the container root resolved to
+    `null` and ScrollTrigger quietly fell back to the tween's own target.
+    `parallax` and `pinned-section` were both affected, in every framework.
+
+### Tests (post-2.0.0 merge)
+
+* **browser:** new `test/browser.test.ts` runs every vanilla snippet against
+  real GSAP 3.15.0 in Chromium — animations run and settle, ScrollTrigger.batch
+  fires on scroll, parallax scrubs, SplitText splits and masks, both
+  prefers-reduced-motion branches execute, and every ScrollTrigger resolves a
+  real trigger. Skips itself with no browser available.
+* **generators:** static assertions that the container wraps the markup, so the
+  invariant is guarded even where no browser can run.
+* **ci:** installs Chromium so the browser suite actually runs.
+* 532 → 616 tests.
+
 # 2.0.0 (unreleased)
 
 Rebuilt on the official [GreenSock GSAP skills](https://github.com/greensock/gsap-skills),
