@@ -1,99 +1,194 @@
-# ⚡ Ultimate GSAP Master MCP Server
+# GSAP MCP Server
 
-The **Ultimate GSAP Master MCP Server** is a high-performance Model Context Protocol (MCP) implementation that grants AI models (like Claude) "surgical precision" over the GreenSock Animation Platform (GSAP). 
+An MCP server that gives an AI coding agent the **official GreenSock GSAP
+skills** — not a paraphrase of them.
 
-It transforms natural language animation requests into production-ready, 60fps-optimized code. Whether you need a complex scroll-triggered sequence, character-by-character text reveals, or physics-based Draggable interfaces, this server provides the expert-level knowledge and implementation logic required.
+The skills published at [greensock/gsap-skills][skills] are vendored into this
+repository and served as MCP resources. Every answer, every generated snippet
+and every validation rule traces back to one of them, and cites which. Where
+the skills do not cover something, this server says so rather than filling the
+gap with invention.
 
-## ✨ Features
+Targets **GSAP 3.15.0**, the release the vendored skills are written against.
 
-- **🧠 Advanced Intent Analysis**: Understands complex natural language requests (e.g., *"Make these cards fade in one by one with a slight bounce when they hit the middle of the screen"*).
-- **🚀 Production-Ready Code**: Generates code with GPU acceleration (`force3D`), memory management (`clearProps`), and proper framework lifecycle handling (React `useGSAP`, cleanup, etc.).
-- **📚 Complete API Database**: Deep knowledge of every core method, easing function, and plugin (ScrollTrigger, SplitText, MorphSVG, DrawSVG, etc.).
-- **🔧 Performance Optimization**: Automatically refactors laggy animations into high-performance 60fps sequences.
-- **🛠️ Expert Debugging**: Analyzes code snippets for layout thrashing, missing plugin registrations, or logic errors.
-- **🎁 All Plugins Included**: Knowledge base updated for the GSAP era where **SplitText, MorphSVG, and DrawSVG are now free.**
-- **🧈 Lenis Smooth Scrolling**: Built-in support for Lenis integration with ScrollTrigger, including setup, React hooks, and best practices.
+[skills]: https://github.com/greensock/gsap-skills
 
-## 🛠 Tools Included
+## Install
 
-| Tool | Description |
-| :--- | :--- |
-| `understand_and_create_animation` | **The flagship tool.** Converts any animation idea into fully functional GSAP code. |
-| `get_gsap_api_expert` | Provides deep technical documentation and examples for any GSAP method or plugin. |
-| `generate_complete_setup` | Generates boilerplate for React, Next.js, Vue, or Vanilla, including plugin registration. |
-| `debug_animation_issue` | Identifies and fixes bugs, performance bottlenecks, and logic errors. |
-| `optimize_for_performance` | Refactors existing GSAP code to ensure 60fps smoothness and GPU acceleration. |
-| `create_production_pattern` | Generates battle-tested patterns like Hero sequences, loading screens, and scroll systems. |
+Runs straight from this fork — no npm publish involved. The `prepare` script
+builds on install.
 
-## 🚀 Installation & Setup
+### Claude Desktop
 
-Since this package is published as `@vinhnguyen/gsap-mcp`, you can use `npx` to run it without manual installation.
-
-### 1. Claude Desktop Configuration
-Open your Claude Desktop configuration file:
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-
-### 2. Add the Server
-Add the following entry to the `mcpServers` section:
+`~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or
+`%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
-    "gsap-master": {
+    "gsap": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@vinhnguyen/gsap-mcp"
-      ]
+      "args": ["-y", "github:osaidrajput9/gsap-mcp"]
     }
   }
 }
 ```
 
-### 3. Restart Claude
-Restart the Claude Desktop application, and you will see a ⚡ icon indicating the GSAP Master tools are ready to use.
+### Claude Code
 
-### Continue.dev (VS Code Extension)
+```bash
+claude mcp add gsap -- npx -y github:osaidrajput9/gsap-mcp
+```
 
-Add the following to your `~/.continue/config.yaml`:
+### Continue.dev
+
+`~/.continue/config.yaml`:
 
 ```yaml
 mcpServers:
-  - name: gsap-mcp
+  - name: gsap
     command: npx
     args:
       - "-y"
-      - "@vinhnguyen/gsap-mcp"
+      - "github:osaidrajput9/gsap-mcp"
 ```
 
-## 📖 Usage Examples
+### From a local clone
 
-### 1. Natural Language Creation
-**User:** *"I want a hero section where the title letters pop up randomly, and then the subtitle slides in from the left once the title is finished."*
+```bash
+git clone https://github.com/osaidrajput9/gsap-mcp
+cd gsap-mcp
+npm install        # `prepare` builds automatically
+npm start
+```
 
-**AI (using `understand_and_create_animation`):** Will generate a `gsap.timeline()` using `SplitText` for the characters, applying a `back.out` ease and a staggered random start time, followed by the subtitle animation.
+Point your client at `node /absolute/path/to/gsap-mcp/dist/index.js`.
 
-### 2. Performance Refactoring
-**User:** *"My scroll animation is laggy on mobile. Here is the code: [code snippet animating `top` and `left` properties]."*
+## Tools
 
-**AI (using `optimize_for_performance`):** Will refactor the code to use `x` and `y` (transforms), add `force3D: true`, and implement `ScrollTrigger.batch` for better performance.
+All eight are read-only (`readOnlyHint`): they read vendored files and return
+text. None writes to disk, spawns a process, or makes a network request.
 
-### 3. Setup Generation
-**User:** *"Set up a new Next.js project with ScrollTrigger and SplitText."*
+| Tool | What it does |
+| :--- | :--- |
+| `get_gsap_guidance` | Returns the official skill covering a topic, routed through the trigger terms GreenSock publishes in `llms.txt`. **Start here.** |
+| `validate_gsap_code` | Fourteen deterministic checks against the skills, with line numbers, suggested fixes and the rule each finding comes from. |
+| `get_gsap_api_expert` | Quotes the skill sections documenting a method, property or plugin. |
+| `understand_and_create_animation` | Generates a snippet for a named pattern. Without a `pattern`, returns the matching skills and the catalog rather than guessing. |
+| `create_production_pattern` | Renders a ready-made pattern for a framework. |
+| `generate_complete_setup` | Install commands, plugin registration and a starter component. |
+| `debug_animation_issue` | Routes a reported problem to the skills, with a checklist parsed from their own "Do Not" sections. |
+| `optimize_for_performance` | Returns the official performance guidance. Reports what to change; never rewrites your code. |
 
-**AI (using `generate_complete_setup`):** Will provide the terminal commands for installation, the `gsap.registerPlugin` boilerplate, and a `useGSAP` wrapper for your components.
+### Patterns
 
-## 📈 Performance Standards
+`scroll-reveal`, `parallax`, `pinned-section`, `horizontal-scroll`,
+`text-reveal`, `timeline-sequence`, `hover-interaction`, `draggable`,
+`loading-sequence`, `page-transition`, `data-viz`, `smooth-scroll-lenis`.
 
-Every piece of code generated by this server adheres to the following standards:
-- **GPU Acceleration**: Uses `x`, `y`, `scale`, and `rotation` instead of layout properties (`top`, `width`, `height`).
-- **Memory Management**: Includes `clearProps` and proper cleanup in framework hooks.
-- **Reduced Motion**: Respects `prefers-reduced-motion` media queries.
-- **Efficiency**: Uses GSAP's internal ticker and optimized batching for scroll events.
+Each renders for `react`, `nextjs`, `vue`, `nuxt`, `svelte` or `vanilla`.
 
-## 📄 License
-MIT
+Every generated snippet gets, by construction rather than by template
+discipline:
 
----
-*Created by Vinh Nguyen - Powered by GSAP Surgical Precision.* ⚡
+- `gsap.matchMedia()` with **both** `prefers-reduced-motion` queries. A
+  matchMedia handler only runs when a condition matches, so `reduce` alone
+  would leave everyone *without* the preference with no animation at all.
+- Scoped selectors — `scope` for `useGSAP`, the third argument to `mm.add()`
+  elsewhere.
+- Teardown that reverts only what the component created.
+- Registered plugins, imported from the public `gsap` package.
+- Transforms rather than layout properties, and `autoAlpha` rather than
+  `opacity`.
+
+`smooth-scroll-lenis` is the one pattern **not** covered by the official
+skills; it is labelled as such wherever it appears. GSAP's own smooth-scroll
+plugin is ScrollSmoother.
+
+## Resources
+
+| URI | Contents |
+| :--- | :--- |
+| `gsap://skills/index` | The upstream `llms.txt` discovery index, plus provenance |
+| `gsap://skills/license` | GreenSock's MIT license for the vendored files |
+| `gsap://skills/gsap-core` | Tweens, easing, stagger, transforms, `matchMedia` |
+| `gsap://skills/gsap-timeline` | Timelines, position parameter, labels, nesting |
+| `gsap://skills/gsap-scrolltrigger` | ScrollTrigger: pinning, scrub, batch, refresh |
+| `gsap://skills/gsap-plugins` | Every plugin, registration, licensing |
+| `gsap://skills/gsap-react` | `useGSAP`, refs, `contextSafe`, SSR |
+| `gsap://skills/gsap-frameworks` | Vue, Nuxt, Svelte lifecycles |
+| `gsap://skills/gsap-performance` | Transforms, `quickTo`, batching |
+| `gsap://skills/gsap-utils` | `clamp`, `mapRange`, `snap`, `toArray`, `distribute` |
+
+Each is the SKILL.md byte-for-byte, frontmatter included.
+
+## Structure
+
+```
+src/
+  index.ts              stdio entry point
+  server.ts             McpServer assembly (registerTool + Zod schemas)
+  data/
+    skills/             vendored skills — MIT, (c) 2026 GreenSock
+      SOURCE.json       upstream commit, sync date, targeted GSAP release
+      LICENSE
+    skills.ts           loader, frontmatter and llms.txt parsing
+  lib/
+    skill-search.ts     whole-word routing, section lookup, rule extraction
+    source-scan.ts      lexical scanning for the validator
+  resources/skills.ts   gsap://skills/* resources
+  generators/
+    framework.ts        per-framework shells
+    patterns.ts         the pattern catalog
+    setup.ts            project boilerplate
+  tools/                one module per tool
+scripts/
+  copy-assets.mjs       copies skills into dist/ (tsc emits only JS)
+  sync-skills.mjs       refreshes the vendored skills
+test/                   Vitest suites and fixtures
+```
+
+Never hand-edit `src/data/skills/`. It is replaced wholesale by the sync.
+
+## Staying current
+
+`.github/workflows/sync-skills.yml` runs weekly, refreshes the vendored skills,
+and opens a pull request only when upstream actually changed. It builds and
+tests first, so a sync that breaks the server is never proposed. It publishes
+nothing.
+
+Run it by hand with:
+
+```bash
+git clone --depth 1 https://github.com/greensock/gsap-skills /tmp/gsap-skills
+node scripts/sync-skills.mjs --from /tmp/gsap-skills
+npm test
+```
+
+## Development
+
+```bash
+npm install
+npm run build     # tsc, then copy the skill files into dist/
+npm test          # builds first, then runs Vitest
+npm run test:watch
+```
+
+493 tests. The suite parses all 72 pattern × framework combinations,
+round-trips the generated code back through `validate_gsap_code`, and drives
+the built server over a real stdio subprocess. GreenSock's own `examples/` are
+vendored as fixtures: if the validator reports an error on that code, the
+validator is wrong.
+
+This package is `private: true` and publishes nowhere.
+
+## Credits
+
+- **[Vinh Nguyen](https://github.com/glorynguyen)** — original
+  [gsap-mcp](https://github.com/glorynguyen/gsap-mcp).
+- **[GreenSock](https://gsap.com)** — GSAP itself and the official
+  [agent skills][skills] this server is built on, vendored under their MIT
+  license.
+
+MIT. See [LICENSE](./LICENSE); the vendored skills carry GreenSock's own MIT
+license at `src/data/skills/LICENSE`.
