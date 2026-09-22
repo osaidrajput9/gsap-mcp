@@ -23,6 +23,10 @@ import { getGsapGuidance } from './tools/guidance.js';
 import { optimizeForPerformance, OPTIMIZE_TARGETS } from './tools/optimize.js';
 import { createProductionPattern, PATTERN_TYPES } from './tools/pattern.js';
 import { generateCompleteSetup } from './tools/setup.js';
+import {
+  validateGsapCode,
+  VALIDATION_FINDING_SHAPE,
+} from './tools/validate.js';
 
 export const SERVER_NAME = 'gsap-mcp';
 export const SERVER_VERSION = '2.0.0';
@@ -65,6 +69,7 @@ export function buildServer(): McpServer {
         'Start with get_gsap_guidance for any "how do I" question — it returns the',
         'official skill rather than a paraphrase. Read a skill directly at',
         'gsap://skills/<name>, or gsap://skills/index for the full list.',
+        'Run validate_gsap_code over existing GSAP before changing it.',
       ].join('\n'),
     },
   );
@@ -118,6 +123,33 @@ export function buildServer(): McpServer {
       annotations: READ_ONLY,
     },
     async (args) => text(getGsapGuidance(args)),
+  );
+
+  server.registerTool(
+    'validate_gsap_code',
+    {
+      title: 'Validate GSAP code against the official skills',
+      description:
+        'Check GSAP code for violations of the official GreenSock skills: layout-property animation, missing registerPlugin, useGSAP without scope, useGSAP unregistered, missing cleanup in React/Vue/Svelte, chained delays instead of timelines, missing ScrollTrigger.refresh after layout changes, opacity where autoAlpha fits, and deprecated APIs. Returns findings with line numbers, suggested fixes and the skill rule each comes from.',
+      inputSchema: {
+        code: z.string().min(1).describe('The GSAP source to check'),
+        filename: z
+          .string()
+          .optional()
+          .describe(
+            'File name or path, used to infer the framework (.jsx/.tsx, .vue, .svelte)',
+          ),
+        framework: frameworkSchema
+          .optional()
+          .describe('Override the framework inferred from the filename'),
+      },
+      outputSchema: VALIDATION_FINDING_SHAPE,
+      annotations: READ_ONLY,
+    },
+    async (args) => {
+      const result = validateGsapCode(args);
+      return { ...text(result.summary), structuredContent: result.structured };
+    },
   );
 
   server.registerTool(
