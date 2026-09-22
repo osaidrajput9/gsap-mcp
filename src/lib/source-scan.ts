@@ -33,7 +33,9 @@ export function blankComments(source: string): string {
     const char = source[i];
     const next = source[i + 1];
 
-    if (char === '/' && next === '/') {
+    // `//` preceded by a colon is a URL scheme (https://), not a comment.
+    // Blanking there would hide whatever followed on the same line.
+    if (char === '/' && next === '/' && source[i - 1] !== ':') {
       const end = source.indexOf('\n', i);
       blank(i, end === -1 ? source.length : end);
       i = end === -1 ? source.length : end;

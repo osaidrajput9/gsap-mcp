@@ -388,6 +388,25 @@ function checkCleanup(code: string, framework: string | null, add: Add): void {
     });
   }
 
+  // A global kill destroys other components' ScrollTriggers, not just this
+  // component's. gsap-scrolltrigger scopes cleanup to the context or an id.
+  const globalKill =
+    /ScrollTrigger\s*\.\s*getAll\s*\(\s*\)\s*\.\s*forEach\s*\([\s\S]{0,120}?\.\s*kill\s*\(/.exec(
+      code,
+    ) ?? /ScrollTrigger\s*\.\s*killAll\s*\(/.exec(code);
+  if (globalKill) {
+    add(globalKill.index, {
+      id: 'global-scrolltrigger-kill',
+      severity: 'error',
+      skill: 'gsap-react',
+      rule: 'In React, use the useGSAP() hook to ensure that all ScrollTriggers and GSAP animations are reverted and cleaned up when necessary, or use a gsap.context() to do it manually.',
+      message:
+        'Killing every ScrollTrigger on the page destroys triggers belonging to other components, not only this one.',
+      suggestion:
+        'Let `useGSAP()` or `gsap.context().revert()` clean up only what this component created, or kill a specific instance with `ScrollTrigger.getById(id)?.kill()`.',
+    });
+  }
+
   const hasGsap = /(?<![A-Za-z0-9_$.])gsap\s*\./.test(code);
   if (!hasGsap) return;
 
@@ -446,24 +465,6 @@ function checkCleanup(code: string, framework: string | null, add: Add): void {
     }
   }
 
-  // A global kill destroys other components' ScrollTriggers, not just this
-  // component's. gsap-scrolltrigger scopes cleanup to the context or an id.
-  const globalKill =
-    /ScrollTrigger\s*\.\s*getAll\s*\(\s*\)\s*\.\s*forEach\s*\([^)]*\.\s*kill/.exec(
-      code,
-    ) ?? /ScrollTrigger\s*\.\s*killAll\s*\(/.exec(code);
-  if (globalKill) {
-    add(globalKill.index, {
-      id: 'global-scrolltrigger-kill',
-      severity: 'error',
-      skill: 'gsap-react',
-      rule: 'In React, use the useGSAP() hook to ensure that all ScrollTriggers and GSAP animations are reverted and cleaned up when necessary, or use a gsap.context() to do it manually.',
-      message:
-        'Killing every ScrollTrigger on the page destroys triggers belonging to other components, not only this one.',
-      suggestion:
-        'Let `useGSAP()` or `gsap.context().revert()` clean up only what this component created, or kill a specific instance with `ScrollTrigger.getById(id)?.kill()`.',
-    });
-  }
 }
 
 function checkChainedDelays(
