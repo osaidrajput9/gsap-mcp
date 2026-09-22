@@ -15,9 +15,10 @@ Targets **GSAP 3.15.0**, the release the vendored skills are written against.
 
 ## Install
 
-Runs straight from this fork. The `prepare` script builds on install, so the
-first launch takes a few seconds longer than a published package would
-(~13s cold, ~2s warm).
+Published on npm as **[`@osaidrajput9/gsap-mcp`][npm]**, so clients install a
+prebuilt package — no compile step on first launch.
+
+[npm]: https://www.npmjs.com/package/@osaidrajput9/gsap-mcp
 
 ### Claude Code, per project (works in cloud sessions)
 
@@ -29,7 +30,7 @@ it:
   "mcpServers": {
     "gsap": {
       "command": "npx",
-      "args": ["-y", "github:osaidrajput9/gsap-mcp"]
+      "args": ["-y", "@osaidrajput9/gsap-mcp"]
     }
   }
 }
@@ -45,7 +46,7 @@ time it sees one.
 ### Claude Code, for yourself
 
 ```bash
-claude mcp add gsap -- npx -y github:osaidrajput9/gsap-mcp
+claude mcp add gsap -- npx -y @osaidrajput9/gsap-mcp
 ```
 
 ### Claude Desktop
@@ -58,7 +59,7 @@ claude mcp add gsap -- npx -y github:osaidrajput9/gsap-mcp
   "mcpServers": {
     "gsap": {
       "command": "npx",
-      "args": ["-y", "github:osaidrajput9/gsap-mcp"]
+      "args": ["-y", "@osaidrajput9/gsap-mcp"]
     }
   }
 }
@@ -74,7 +75,7 @@ mcpServers:
     command: npx
     args:
       - "-y"
-      - "github:osaidrajput9/gsap-mcp"
+      - "@osaidrajput9/gsap-mcp"
 ```
 
 ### From a local clone
@@ -88,32 +89,15 @@ npm start
 
 Point your client at `node /absolute/path/to/gsap-mcp/dist/index.js`.
 
-### Publishing it to npm (optional)
+### Installing from a git checkout instead
 
-The package is `private: true` and publishes nowhere, which is why installs go
-through git. Publishing under your own scope removes the build-on-install cost
-(~0.8s warm instead of ~2s) and makes the install line a plain package name.
-
-Two edits to `package.json`:
-
-```diff
--  "private": true,
-+  "publishConfig": { "access": "public" },
+```json
+"args": ["-y", "github:osaidrajput9/gsap-mcp"]
 ```
 
-`access: public` is required: scoped packages default to restricted, which
-needs a paid npm account. Then, from a machine logged in to npm:
-
-```bash
-npm publish
-```
-
-`prepublishOnly` runs the full test suite first, and `prepare` builds `dist/`,
-so a broken build cannot be published. Installs then become
-`npx -y @osaidrajput9/gsap-mcp`.
-
-This changes nothing about CI: `.github/workflows/` stays publish-free, and a
-test fails if any workflow gains a publish step or a registry credential.
+Still works, and tracks `main` rather than the last release. The cost is a
+build on install: `prepare` compiles TypeScript on the client's machine, which
+measured 12.9s cold and 2.1s warm against 5.6s and 0.92s from the registry.
 
 ## Tools
 
@@ -269,7 +253,20 @@ every parser still finds its sections and rules. Git on Windows checks files
 out that way by default, and JavaScript's `.` does not match `\r`, so a
 Linux-only suite cannot see the difference.
 
-This package is `private: true` and publishes nowhere.
+## Releasing
+
+```bash
+npm version patch   # or minor / major
+npm publish
+```
+
+`prepublishOnly` runs the full suite and `prepare` builds `dist/`, so a broken
+build cannot reach the registry. Publishing is manual and stays that way:
+`.github/workflows/` holds no publish step and no registry credential, and
+`test/workflows.test.ts` fails if either ever appears.
+
+`publishConfig.access` is set to `public` because scoped packages default to
+restricted, which needs a paid npm account.
 
 ## Credits
 
