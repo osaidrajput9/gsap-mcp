@@ -5,7 +5,11 @@
 # main, using the NPM_TOKEN / NODE_AUTH_TOKEN secrets and npm provenance
 # (id-token: write). That is wrong for a fork: it would publish a breaking major
 # of somebody else's package name, and it force-pushes release commits back to
-# main. The release job was removed and the package is marked private.
+# main. The release job was removed.
+#
+# This fork is published as @osaidrajput9/gsap-mcp, by hand, from a machine
+# logged in to npm. No workflow holds a registry credential, and none ever
+# should.
 #
 # Do not add a registry, a publish step, or any secret to this file.
 name: CI
