@@ -40,6 +40,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Without a browser the browser suite skips itself, and the bugs it
+      # exists to catch (GSAP rejecting a snippet, a ScrollTrigger whose
+      # trigger silently resolves to null) would reach main unnoticed.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Build
         run: npm run build
 

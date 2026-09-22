@@ -95,7 +95,10 @@ discipline:
   matchMedia handler only runs when a condition matches, so `reduce` alone
   would leave everyone *without* the preference with no animation at all.
 - Scoped selectors — `scope` for `useGSAP`, the third argument to `mm.add()`
-  elsewhere.
+  elsewhere. The scope is a wrapper *around* the markup, never the markup root:
+  a scoped selector never matches the scope element itself, so a container
+  sitting on the root would silently resolve a `trigger` pointing at that root
+  to `null`.
 - Teardown that reverts only what the component created.
 - Registered plugins, imported from the public `gsap` package.
 - Transforms rather than layout properties, and `autoAlpha` rather than
@@ -174,11 +177,19 @@ npm test          # builds first, then runs Vitest
 npm run test:watch
 ```
 
-493 tests. The suite parses all 72 pattern × framework combinations,
+616 tests. The suite parses all 72 pattern × framework combinations,
 round-trips the generated code back through `validate_gsap_code`, and drives
 the built server over a real stdio subprocess. GreenSock's own `examples/` are
 vendored as fixtures: if the validator reports an error on that code, the
 validator is wrong.
+
+`test/browser.test.ts` loads every vanilla snippet into Chromium with real
+GSAP 3.15.0 and asserts the animations happen: the timeline runs and settles,
+`ScrollTrigger.batch` fires on scroll, the parallax layer scrubs, SplitText
+splits and masks, both `prefers-reduced-motion` branches run, and every
+ScrollTrigger resolves a real trigger element. It skips itself when no
+Chromium is available, so the rest of the suite runs anywhere; force the skip
+with `GSAP_MCP_SKIP_BROWSER_TESTS=1`.
 
 This package is `private: true` and publishes nowhere.
 

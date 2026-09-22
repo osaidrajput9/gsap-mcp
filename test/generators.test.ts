@@ -1,6 +1,7 @@
 import { parseSync } from 'oxc-parser';
 import { describe, expect, it } from 'vitest';
 
+import { containerClass } from '../src/generators/framework.js';
 import {
   FRAMEWORKS,
   type Framework,
@@ -78,6 +79,54 @@ describe('generated snippets', () => {
     // Killing every trigger on the page destroys other components' triggers.
     expect(code).not.toContain('ScrollTrigger.getAll()');
     expect(code).not.toMatch(/addEventListener\(\s*["']resize["']/);
+  });
+
+  // The container must be a strict ANCESTOR of everything a pattern selects.
+  // A scoped selector never matches the scope element itself, so a container
+  // sitting *on* the markup root silently resolves a trigger pointing at that
+  // root to null, and ScrollTrigger falls back to the tween's own target.
+  // Verified in the browser suite; asserted statically here so it is still
+  // guarded where no browser is available.
+  it.each(PATTERNS)('%s: the container class is not used by its markup', (pattern) => {
+    const spec = getPattern(pattern)!.build('react');
+    expect(spec.markup ?? '').not.toContain(containerClass(spec.componentName));
+  });
+
+  it.each(combinations)('%s / %s wraps its markup in the container', (pattern, framework) => {
+    const spec = getPattern(pattern)!.build(framework);
+    const code = renderPattern(getPattern(pattern)!, framework);
+    const wrapper = containerClass(spec.componentName);
+
+    if (framework === 'vanilla') {
+      // Vanilla emits no markup; it documents the container it expects.
+      expect(code).toContain(`document.querySelector(".${wrapper}")`);
+      return;
+    }
+
+    const binding =
+      framework === 'react' || framework === 'nextjs'
+        ? 'ref={container}'
+        : framework === 'svelte'
+          ? 'bind:this={container}'
+          : 'ref="container"';
+    const attribute =
+      framework === 'react' || framework === 'nextjs' ? 'className' : 'class';
+
+    const wrapperAttr = `${attribute}="${wrapper}"`;
+    expect(code).toContain(binding);
+    expect(code).toContain(wrapperAttr);
+
+    // The wrapper opens before the pattern's own markup, rather than the
+    // binding being merged into the markup's root element.
+    const rootClass = /class(?:Name)?="([^"]+)"/
+      .exec(spec.markup ?? '')?.[1]
+      .split(/\s+/)[0];
+    if (rootClass) {
+      // Quoted so "scroll-reveal" does not match "scroll-reveal-root".
+      const rootAttr = `${attribute}="${rootClass}"`;
+      expect(code).toContain(rootAttr);
+      expect(code.indexOf(wrapperAttr)).toBeLessThan(code.indexOf(rootAttr));
+    }
   });
 
   it('registers useGSAP for React and not elsewhere', () => {
