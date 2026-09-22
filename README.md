@@ -177,7 +177,7 @@ npm test          # builds first, then runs Vitest
 npm run test:watch
 ```
 
-696 tests. The suite parses all 72 pattern × framework combinations,
+708 tests. The suite parses all 72 pattern × framework combinations,
 round-trips the generated code back through `validate_gsap_code`, and drives
 the built server over a real stdio subprocess. GreenSock's own `examples/` are
 vendored as fixtures: if the validator reports an error on that code, the
@@ -196,6 +196,14 @@ component into a real React 19 app and mounts it. The key check is a decoy —
 markup carrying the same classes rendered *outside* the component. A scoped
 selector must never reach it. That, plus unmount teardown and `contextSafe`
 handlers, is what the static checks cannot establish.
+
+`test/acceptance-hero.test.ts` is the end-to-end one: it drives the built
+server over stdio exactly as a client does, asks for an interactive hero
+section in plain language, takes the returned code verbatim, feeds it back to
+`validate_gsap_code`, then composes the two generated components into one page
+and mounts it. It covers what a real build actually looks like — two patterns
+side by side, each with its own `useGSAP` and `gsap.matchMedia()` — and checks
+keyboard reachability, reduced motion, cross-component scoping and teardown.
 
 This package is `private: true` and publishes nowhere.
 
