@@ -15,8 +15,38 @@ Targets **GSAP 3.15.0**, the release the vendored skills are written against.
 
 ## Install
 
-Runs straight from this fork — no npm publish involved. The `prepare` script
-builds on install.
+Runs straight from this fork. The `prepare` script builds on install, so the
+first launch takes a few seconds longer than a published package would
+(~13s cold, ~2s warm).
+
+### Claude Code, per project (works in cloud sessions)
+
+Put a `.mcp.json` at the root of the project you want the server in, and commit
+it:
+
+```json
+{
+  "mcpServers": {
+    "gsap": {
+      "command": "npx",
+      "args": ["-y", "github:osaidrajput9/gsap-mcp"]
+    }
+  }
+}
+```
+
+This is the only route that works in a **remote or cloud Claude Code session**.
+`claude mcp add` writes to a config file on the machine running the `claude`
+binary, so it cannot register anything from an ephemeral container. Project
+scope is read from the repository checkout instead, and is shared with anyone
+who clones it. Claude Code asks to approve a project-scoped server the first
+time it sees one.
+
+### Claude Code, for yourself
+
+```bash
+claude mcp add gsap -- npx -y github:osaidrajput9/gsap-mcp
+```
 
 ### Claude Desktop
 
@@ -63,6 +93,33 @@ npm start
 ```
 
 Point your client at `node /absolute/path/to/gsap-mcp/dist/index.js`.
+
+### Publishing it to npm (optional)
+
+The package is `private: true` and publishes nowhere, which is why installs go
+through git. Publishing under your own scope removes the build-on-install cost
+(~0.8s warm instead of ~2s) and makes the install line a plain package name.
+
+Two edits to `package.json`:
+
+```diff
+-  "private": true,
++  "publishConfig": { "access": "public" },
+```
+
+`access: public` is required: scoped packages default to restricted, which
+needs a paid npm account. Then, from a machine logged in to npm:
+
+```bash
+npm publish
+```
+
+`prepublishOnly` runs the full test suite first, and `prepare` builds `dist/`,
+so a broken build cannot be published. Installs then become
+`npx -y @osaidrajput9/gsap-mcp`.
+
+This changes nothing about CI: `.github/workflows/` stays publish-free, and a
+test fails if any workflow gains a publish step or a registry credential.
 
 ## Tools
 
