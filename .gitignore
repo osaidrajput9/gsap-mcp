@@ -35,3 +35,5 @@ coverage/
 # Cache
 .cache/
 .npm/
+# Scratch probes
+.tmp-*

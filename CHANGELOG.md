@@ -1,3 +1,76 @@
+# 2.0.0 (unreleased)
+
+Rebuilt on the official [GreenSock GSAP skills](https://github.com/greensock/gsap-skills),
+vendored at commit `aed9cfd` under their MIT license. Targets GSAP 3.15.0.
+
+### BREAKING CHANGES
+
+* **npm:** the package is now `private: true` and publishes nowhere. The
+  semantic-release workflow that published `@vinhnguyen/gsap-mcp` on every push
+  to `main` has been removed, along with its `NPM_TOKEN` / `NODE_AUTH_TOKEN`
+  usage. Install from the repository instead:
+  `npx -y github:osaidrajput9/gsap-mcp`.
+* **animation:** `understand_and_create_animation` no longer guesses which
+  template to emit. Pass `pattern`; without it the tool returns the matching
+  official skills and the pattern catalog. The old keyword analyzer selected
+  templates with substring matching, so "center" matched "enter" and picked the
+  entrance template.
+* **api:** the hand-written `GSAP_COMPLETE_API` object is gone.
+  `get_gsap_api_expert` now quotes the official skills and says plainly when
+  they do not cover a term. It documented `ScrollTrigger.matchMedia`,
+  `throwProps` and `new SplitText()` as current; none of them are.
+* **optimize:** `optimize_for_performance` no longer rewrites the supplied
+  code. It used a regex to append `force3D: true` after every `duration`, which
+  corrupted any file containing that word in a string or comment.
+
+### Features
+
+* **skills:** the eight official skills are served as MCP resources at
+  `gsap://skills/<name>`, plus `gsap://skills/index` and
+  `gsap://skills/license`.
+* **guidance:** new `get_gsap_guidance(topic)` routes through the trigger terms
+  in `llms.txt` using whole-word matching, and reports low confidence instead of
+  guessing when nothing matches.
+* **validate:** new `validate_gsap_code` with fourteen deterministic checks
+  derived from the skills, returning line numbers, suggested fixes, the rule
+  each finding comes from, and structured output.
+* **server:** migrated to `McpServer` + `registerTool()` with Zod input
+  schemas. Every tool carries `readOnlyHint`.
+* **frameworks:** patterns render for react, nextjs, vue, nuxt, svelte and
+  vanilla; previously only React and vanilla.
+* **ci:** a weekly workflow syncs the official skills and opens a pull request
+  when they change. It publishes nothing.
+
+### Bug Fixes
+
+* **templates:** `ScrollTrigger.matchMedia` replaced with `gsap.matchMedia()`,
+  and manual resize listeners removed in favour of it.
+* **templates:** `throwProps` replaced with `inertia: true` and InertiaPlugin.
+* **templates:** removed the `useLayoutEffect` that ran
+  `ScrollTrigger.getAll().forEach(kill)` on unmount, destroying triggers owned
+  by other components.
+* **templates:** removed `clearProps` wherever it conflicted with a
+  `toggleActions` reverse, which needs the inline styles it cleared.
+* **templates:** patterns no longer inject animations that were not requested.
+  Parallax and pin blocks were appended whenever those words appeared anywhere
+  in the request string.
+* **templates:** `SplitText.create()` with `autoSplit`, `onSplit` and `mask`,
+  replacing `new SplitText()`.
+* **templates:** every generated snippet respects `prefers-reduced-motion`,
+  with both media queries listed so visitors without the preference still get
+  animation.
+* **templates:** dropped blanket `force3D`, `gsap.defaults({ lazy: false })`,
+  arbitrary `refreshPriority`, and the page-wide "emergency reset" advice.
+* **docs:** removed the unverifiable IE11 support claims.
+* **license:** added the missing LICENSE file, crediting Vinh Nguyen as the
+  original author and GreenSock for the vendored skills.
+
+### Tests
+
+* 493 Vitest tests covering every tool, resource and generator. All 72
+  pattern × framework combinations are parsed and run back through the
+  validator; GreenSock's own `examples/` are used as fixtures.
+
 ## [1.1.2](https://github.com/glorynguyen/gsap-mcp/compare/v1.1.1...v1.1.2) (2026-02-08)
 
 
