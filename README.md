@@ -177,7 +177,7 @@ npm test          # builds first, then runs Vitest
 npm run test:watch
 ```
 
-708 tests. The suite parses all 72 pattern × framework combinations,
+720 tests. The suite parses all 72 pattern × framework combinations,
 round-trips the generated code back through `validate_gsap_code`, and drives
 the built server over a real stdio subprocess. GreenSock's own `examples/` are
 vendored as fixtures: if the validator reports an error on that code, the
@@ -204,6 +204,14 @@ section in plain language, takes the returned code verbatim, feeds it back to
 and mounts it. It covers what a real build actually looks like — two patterns
 side by side, each with its own `useGSAP` and `gsap.matchMedia()` — and checks
 keyboard reachability, reduced motion, cross-component scoping and teardown.
+
+`test/vue-svelte-browser.test.ts` does the same for the remaining two
+frameworks: it compiles each generated Vue SFC and Svelte component and mounts
+them. Neither has `useGSAP` to fall back on, so the scope passed to `mm.add()`
+is the only thing confining selectors there — verified by removing it, at which
+point the decoy animates and the test fails.
+
+All six frameworks are now verified by execution, not by construction.
 
 This package is `private: true` and publishes nowhere.
 
