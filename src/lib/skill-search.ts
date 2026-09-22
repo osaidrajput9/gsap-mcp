@@ -94,6 +94,12 @@ export interface SkillMatch {
   score: number;
   /** Why this skill matched, for display. */
   reasons: string[];
+  /**
+   * Trigger terms from llms.txt that the topic hit. A non-empty list is the
+   * strongest evidence available, because these are the terms GreenSock
+   * publishes for routing to this skill.
+   */
+  triggerHits: string[];
 }
 
 /**
@@ -119,6 +125,17 @@ export function matchSkills(topic: string): SkillMatch[] {
     ) {
       score += 40;
       reasons.push(`names the ${skill.name} skill`);
+    } else {
+      // The skill name minus its "gsap-" prefix is itself a topic word —
+      // "react", "timeline", "performance". Naming it should outrank another
+      // skill whose description merely mentions it while pointing elsewhere:
+      // gsap-frameworks' own description reads "For React use gsap-react",
+      // which used to let it outrank gsap-react on a React question.
+      const subject = skill.name.replace(/^gsap-/, '');
+      if (subject && containsTerm(query, subject)) {
+        score += 18;
+        reasons.push(`names "${subject}"`);
+      }
     }
 
     // Trigger terms are the index GreenSock publishes for exactly this job.
@@ -163,7 +180,7 @@ export function matchSkills(topic: string): SkillMatch[] {
       reasons.push(`${bodyHits} term(s) in the skill body`);
     }
 
-    if (score > 0) matches.push({ skill, score, reasons });
+    if (score > 0) matches.push({ skill, score, reasons, triggerHits: hitTriggers });
   }
 
   // Ties break on name so results are stable across runs.

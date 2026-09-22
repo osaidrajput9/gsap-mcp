@@ -16,107 +16,12 @@ import { PATTERNS } from './src/generators/patterns.js';
 import { SETUP_PLUGINS } from './src/generators/setup.js';
 import { PATTERN_TYPES } from './src/tools/pattern.js';
 import { gsapApiExpert, type ApiExpertLevel } from './src/tools/api-expert.js';
+import { getGsapGuidance } from './src/tools/guidance.js';
 import { understandAndCreateAnimation } from './src/tools/animation.js';
 import { generateCompleteSetup } from './src/tools/setup.js';
 import { debugAnimationIssue } from './src/tools/debug.js';
 import { optimizeForPerformance } from './src/tools/optimize.js';
 import { createProductionPattern } from './src/tools/pattern.js';
-
-// ========================================================================================
-// ADVANCED INTENT ANALYSIS ENGINE - Understands natural language perfectly
-// ========================================================================================
-
-const INTENT_ANALYZER = {
-  patterns: {
-    scroll_based: {
-      keywords: ['scroll', 'scrolling', 'viewport', 'parallax', 'when scrolling', 'on scroll', 'scroll trigger', 'reveal on scroll', 'scroll animation'],
-      confidence_boosters: ['viewport', 'parallax', 'when user scrolls', 'scroll into view'],
-      techniques: ['ScrollTrigger', 'parallax', 'pin', 'scrub', 'batch processing'],
-      best_practices: ['Use ScrollTrigger.batch for performance', 'Add refreshPriority for important triggers', 'Use toggleActions for simple reveals']
-    },
-    entrance_animations: {
-      keywords: ['fade in', 'slide in', 'appear', 'entrance', 'reveal', 'show', 'animate in', 'come in', 'enter'],
-      confidence_boosters: ['when page loads', 'on page load', 'initially', 'at start'],
-      techniques: ['gsap.from', 'stagger', 'timeline', 'delay'],
-      best_practices: ['Use power3.out for natural feel', 'Add stagger for multiple elements', 'Set initial state with gsap.set']
-    },
-    text_animations: {
-      keywords: ['text', 'words', 'characters', 'letters', 'typewriter', 'typing', 'text reveal', 'character by character', 'word by word'],
-      confidence_boosters: ['split text', 'character animation', 'typing effect', 'text effect'],
-      techniques: ['SplitText', 'stagger', 'char animation', 'word animation'],
-      best_practices: ['Use SplitText for complex text effects', 'Add stagger for character reveals', 'Consider performance on mobile']
-    },
-    interactive: {
-      keywords: ['hover', 'click', 'drag', 'interactive', 'on hover', 'on click', 'mouse over', 'touch', 'press'],
-      confidence_boosters: ['user interaction', 'interactive', 'drag and drop', 'clickable'],
-      techniques: ['event listeners', 'Draggable', 'hover effects', 'click animations'],
-      best_practices: ['Add visual feedback', 'Use touch-friendly targets', 'Provide clear interaction hints']
-    },
-    svg_animations: {
-      keywords: ['svg', 'path', 'draw', 'drawing', 'stroke', 'icon', 'vector', 'shape', 'morph'],
-      confidence_boosters: ['svg path', 'draw svg', 'svg animation', 'vector animation'],
-      techniques: ['DrawSVG', 'MorphSVG', 'MotionPath', 'stroke animation'],
-      best_practices: ['Optimize SVG paths', 'Use vector-effect for consistent strokes', 'Consider file size']
-    },
-    complex_sequences: {
-      keywords: ['sequence', 'timeline', 'choreography', 'orchestrate', 'step by step', 'one after another', 'chain'],
-      confidence_boosters: ['complex animation', 'sequence', 'timeline', 'choreographed'],
-      techniques: ['Timeline', 'labels', 'callbacks', 'nested timelines'],
-      best_practices: ['Use labels for complex timelines', 'Add callbacks for events', 'Break complex sequences into smaller timelines']
-    },
-    performance_critical: {
-      keywords: ['smooth', 'performance', '60fps', 'lag', 'stuttering', 'optimize', 'fast', 'efficient'],
-      confidence_boosters: ['performance', 'smooth', '60fps', 'optimized'],
-      techniques: ['transform properties', 'will-change', 'force3D', 'efficient selectors'],
-      best_practices: ['Use transform over layout properties', 'Add will-change CSS', 'Cleanup animations properly']
-    },
-    smooth_scrolling: {
-      keywords: ['smooth scroll', 'lenis', 'buttery', 'smoothness', 'inertia scroll', 'momentum'],
-      confidence_boosters: ['feels janky', 'smooth out scrolling', 'luxury feel'],
-      techniques: ['Lenis', 'gsap.ticker', 'ScrollTrigger.update'],
-      best_practices: ['Sync with gsap.ticker', 'Call lenis.destroy() on unmount', 'Set lagSmoothing(0)']
-    },
-  },
-
-  analyze: function(request: string) {
-    const lowercaseRequest = request.toLowerCase();
-    const results = [];
-
-    for (const [patternName, pattern] of Object.entries(this.patterns)) {
-      let score = 0;
-      let matches = [];
-
-      // Check keywords
-      for (const keyword of pattern.keywords) {
-        if (lowercaseRequest.includes(keyword)) {
-          score += 1;
-          matches.push(keyword);
-        }
-      }
-
-      // Check confidence boosters (worth more points)
-      for (const booster of pattern.confidence_boosters) {
-        if (lowercaseRequest.includes(booster)) {
-          score += 2;
-          matches.push(`${booster} (high confidence)`);
-        }
-      }
-
-      if (score > 0) {
-        results.push({
-          pattern: patternName,
-          confidence: score / (pattern.keywords.length + pattern.confidence_boosters.length),
-          raw_score: score,
-          matches: matches,
-          techniques: pattern.techniques,
-          best_practices: pattern.best_practices
-        });
-      }
-    }
-
-    return results.sort((a, b) => b.raw_score - a.raw_score);
-  }
-};
 
 // ========================================================================================
 // MCP SERVER SETUP - Bulletproof and production ready
@@ -201,6 +106,32 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             }
           },
           required: ['request']
+        }
+      },
+      {
+        name: 'get_gsap_guidance',
+        description: 'Return the official GreenSock skill that covers a topic, routed through the trigger terms in skills/llms.txt',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            topic: {
+              type: 'string',
+              description: 'What you need to know, e.g. "pin a section on scroll", "useGSAP cleanup", "stagger from center"'
+            },
+            max_skills: {
+              type: 'number',
+              description: 'How many matching skills to return in full (default 1)',
+              minimum: 1,
+              maximum: 8,
+              default: 1
+            },
+            index_only: {
+              type: 'boolean',
+              description: 'Return only the ranking, without skill bodies',
+              default: false
+            }
+          },
+          required: ['topic']
         }
       },
       {
@@ -342,6 +273,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               context: args?.context as string | undefined,
               framework: args?.framework as Framework | undefined,
               complexity: args?.complexity as string | undefined,
+            }),
+          }]
+        };
+      }
+
+      case 'get_gsap_guidance': {
+        return {
+          content: [{
+            type: 'text',
+            text: getGsapGuidance({
+              topic: args?.topic as string,
+              max_skills: args?.max_skills as number | undefined,
+              index_only: args?.index_only as boolean | undefined,
             }),
           }]
         };
