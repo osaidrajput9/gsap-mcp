@@ -5,6 +5,8 @@
  * over an in-memory or stdio transport without spawning a process.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
@@ -29,7 +31,23 @@ import {
 } from './tools/validate.js';
 
 export const SERVER_NAME = 'gsap-mcp';
-export const SERVER_VERSION = '2.0.0';
+/**
+ * Read from package.json rather than written out here, so a release cannot
+ * leave the server announcing a version it is not.
+ *
+ * It was hardcoded until 2.0.1, which shipped a server that introduced itself
+ * to every MCP client as 2.0.0. `npm version` rewrites package.json and the
+ * lockfile, and has no reason to know about a string in a TypeScript file, so
+ * the two drift apart silently on every release after the first.
+ *
+ * `../package.json` resolves the same way in all three places this module
+ * runs: from `dist/` in the published package, from `dist/` in a clone, and
+ * from `src/` under the test runner. npm always includes package.json in a
+ * tarball, so it is present wherever the server is.
+ */
+export const SERVER_VERSION: string = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+).version;
 
 /**
  * Every tool here reads vendored data and returns text. None writes to disk,

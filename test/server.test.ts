@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -48,6 +48,19 @@ describe('MCP server', () => {
       name: SERVER_NAME,
       version: SERVER_VERSION,
     });
+  });
+
+  it('reports the version this package actually is', () => {
+    // The check above compares the server against itself, so it holds however
+    // wrong SERVER_VERSION is. This one anchors it to package.json.
+    //
+    // It was hardcoded until 2.0.1, which shipped a server introducing itself
+    // to every client as 2.0.0: `npm version` rewrites package.json and the
+    // lockfile, and has no reason to know about a string in a .ts file.
+    const pkg = JSON.parse(
+      readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+    );
+    expect(client.getServerVersion()?.version).toBe(pkg.version);
   });
 
   it('lists every tool, old and new', async () => {
