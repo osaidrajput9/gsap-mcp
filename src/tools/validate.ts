@@ -147,10 +147,15 @@ function detectFramework(
 }
 
 export function validateGsapCode(input: ValidateToolInput): ValidationResult {
-  const original = input.code;
-  if (!original?.trim()) {
+  if (!input.code?.trim()) {
     throw new Error('code is required');
   }
+
+  // Normalise line endings before anything reads the source. A stray \r
+  // breaks patterns anchored with `$`, because JavaScript's `.` does not match
+  // \r — it is a line terminator. Stripping it does not change the number of
+  // newlines, so reported line numbers are unaffected.
+  const original = input.code.replace(/\r\n/g, '\n');
 
   const code = blankComments(original);
   const index = new LineIndex(original);

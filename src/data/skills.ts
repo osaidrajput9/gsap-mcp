@@ -15,6 +15,25 @@ import { fileURLToPath } from 'node:url';
 /** Directory holding the vendored skills, resolved relative to this module. */
 export const SKILLS_DIR = fileURLToPath(new URL('./skills/', import.meta.url));
 
+/**
+ * Reads a vendored file with line endings normalised to LF.
+ *
+ * Git on Windows converts these files to CRLF on checkout by default, and a
+ * stray `\r` silently breaks every downstream parser: JavaScript's `.` does
+ * not match `\r` (it is a line terminator), so `/^(#{2,4})\s+(.*)$/` fails on
+ * "## Stagger\r" and no section is ever found. That turned
+ * get_gsap_api_expert, debug_animation_issue and optimize_for_performance into
+ * tools that reported "nothing matches" for every input.
+ *
+ * Normalising here fixes it once, at the only place these files are read.
+ * .gitattributes also pins them to LF so the conversion does not happen at all.
+ */
+function readVendored(path: string): string {
+  // \r\n? covers both Windows CRLF and a lone CR, so no carriage return can
+  // reach a parser whatever produced the file.
+  return readFileSync(path, 'utf8').replace(/\r\n?/g, '\n');
+}
+
 export interface SkillSource {
   repository: string;
   commit: string;
@@ -141,9 +160,9 @@ export function parseLlmsIndex(text: string): Map<string, LlmsEntry> {
 }
 
 function readSkills(): { skills: Skill[]; llmsText: string; source: SkillSource } {
-  const llmsText = readFileSync(join(SKILLS_DIR, 'llms.txt'), 'utf8');
+  const llmsText = readVendored(join(SKILLS_DIR, 'llms.txt'));
   const source = JSON.parse(
-    readFileSync(join(SKILLS_DIR, 'SOURCE.json'), 'utf8'),
+    readVendored(join(SKILLS_DIR, 'SOURCE.json')),
   ) as SkillSource;
   const index = parseLlmsIndex(llmsText);
 
@@ -154,7 +173,7 @@ function readSkills(): { skills: Skill[]; llmsText: string; source: SkillSource 
       const file = join(SKILLS_DIR, dir, 'SKILL.md');
       let content: string;
       try {
-        content = readFileSync(file, 'utf8');
+        content = readVendored(file);
       } catch {
         // A directory without a SKILL.md is not a skill, per the upstream spec.
         return [];

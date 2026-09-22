@@ -1,0 +1,16 @@
+# Default: let git normalise text files in the repository.
+* text=auto
+
+# The vendored GreenSock skills, and the validator's own fixtures, must stay
+# LF in the working tree on every platform.
+#
+# Git on Windows converts to CRLF on checkout by default. A stray \r silently
+# breaks parsing: JavaScript's `.` does not match \r (it is a line terminator),
+# so a heading regex anchored with `$` fails on "## Stagger\r" and no section is
+# ever found. The loader also strips \r defensively, but not converting in the
+# first place is the real fix.
+src/data/skills/** text eol=lf
+test/fixtures/** text eol=lf
+
+# Generated lockfile: keep diffs sane.
+package-lock.json text eol=lf

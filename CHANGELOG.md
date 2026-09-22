@@ -1,3 +1,31 @@
+### Bug Fixes (Windows)
+
+* **skills:** every parser broke on a Windows checkout. Git converts these
+  files to CRLF by default, and JavaScript's `.` does not match `\r` — it is a
+  line terminator — so `/^(#{2,4})\s+(.*)$/` never matched `"## Stagger\r"`.
+  `sections()` returned an empty array, and with it `doNotRules()`,
+  `bestPracticeRules()` and `findSections()`. The visible effect was
+  `get_gsap_api_expert`, `debug_animation_issue` and `optimize_for_performance`
+  reporting "nothing matches" for every input, on every Windows install.
+  Reported by a user running `npm test` on Windows: 10 failures, one cause.
+  - The loader now normalises `\r\n?` to `\n` when reading vendored files,
+    which fixes it at the only place they are read.
+  - `.gitattributes` pins `src/data/skills/**` and `test/fixtures/**` to LF so
+    the conversion does not happen in the first place.
+  - `validate_gsap_code` normalises CRLF in caller-supplied code too. Stripping
+    `\r` does not change the newline count, so reported line numbers are
+    unaffected.
+
+### Tests (Windows)
+
+* **line-endings:** new `test/line-endings.test.ts` asserts no loaded skill
+  carries a carriage return, that sections and rules are still extracted, that
+  `parseFrontmatter`/`parseLlmsIndex`/`sections` accept CRLF directly, and that
+  the validator returns identical findings and line numbers for CRLF and LF
+  input. Verified against the bug: with the fix reverted and the skills
+  converted to CRLF, 12 tests fail.
+* 720 → 727 tests.
+
 ### Tests (Vue and Svelte verification)
 
 * **vue/svelte:** new `test/vue-svelte-browser.test.ts` compiles each generated
