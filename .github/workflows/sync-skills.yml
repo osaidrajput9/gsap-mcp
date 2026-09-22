@@ -61,11 +61,7 @@ jobs:
             echo "No upstream skill changes."
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            {
-              echo 'summary<<SUMMARY_EOF'
-              git diff --stat -- src/data/skills
-              echo SUMMARY_EOF
-            } >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/data/skills
           fi
 
       # Run against the refreshed skills. A skill rewrite upstream can change
@@ -79,42 +75,25 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          SUMMARY: ${{ steps.diff.outputs.summary }}
         run: |
           set -euo pipefail
 
           UPSTREAM_SHA="$(git -C .upstream-gsap-skills rev-parse --short HEAD)"
           BRANCH="chore/sync-gsap-skills-${UPSTREAM_SHA}"
 
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
             echo "Branch $BRANCH already exists; a pull request is already open for this upstream commit."
             exit 0
           fi
 
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
           git checkout -b "$BRANCH"
           git add src/data/skills
-          git commit -m "chore(skills): sync official GSAP skills to ${UPSTREAM_SHA}
-
-Automated refresh of the vendored copy of github.com/greensock/gsap-skills.
-Build and tests passed against the refreshed skills."
-
+          git diff --cached --stat > /tmp/skills-diffstat.txt
+          git commit -m "chore(skills): sync official GSAP skills to ${UPSTREAM_SHA}" -m "Automated refresh of the vendored copy of github.com/greensock/gsap-skills. Build and tests passed against the refreshed skills."
           git push -u origin "$BRANCH"
 
-          gh pr create \
-            --title "chore(skills): sync official GSAP skills to ${UPSTREAM_SHA}" \
-            --body "Automated weekly refresh of the vendored official GreenSock skills.
-
-Upstream: https://github.com/greensock/gsap-skills/commit/${UPSTREAM_SHA}
-
-\`\`\`
-${SUMMARY}
-\`\`\`
-
-\`npm test\` passed against the refreshed skills. Worth a look at the diff
-anyway: the routing tests and validate_gsap_code rules quote these files, so
-a rewrite upstream can change which skill a topic resolves to.
-
-This workflow does not publish anything."
+          node scripts/sync-pr-body.mjs "$UPSTREAM_SHA" /tmp/skills-diffstat.txt > /tmp/skills-pr-body.md
+          gh pr create --title "chore(skills): sync official GSAP skills to ${UPSTREAM_SHA}" --body-file /tmp/skills-pr-body.md
