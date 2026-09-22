@@ -56,7 +56,10 @@ function buildResources(): SkillResource[] {
     description:
       'MIT license covering the vendored copy of the official GreenSock agent skills.',
     mimeType: 'text/plain',
-    text: readFileSync(join(SKILLS_DIR, 'LICENSE'), 'utf8'),
+    text: readFileSync(join(SKILLS_DIR, 'LICENSE'), 'utf8').replace(
+      /\r\n?/g,
+      '\n',
+    ),
   };
 
   const skillResources = SKILLS.map<SkillResource>((skill) => ({
