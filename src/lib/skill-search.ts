@@ -237,6 +237,66 @@ function definesTerm(text: string, term: string): boolean {
   ).test(text);
 }
 
+export interface SkillRule {
+  skill: string;
+  /** Bullet text with the leading marker and emoji stripped. */
+  text: string;
+}
+
+/** Pulls top-level bullets out of a section, ignoring fenced code. */
+function bulletsOf(text: string): string[] {
+  const bullets: string[] = [];
+  let inFence = false;
+  let current: string | null = null;
+
+  for (const line of text.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+
+    const bullet = /^[-*]\s+(.*)$/.exec(line);
+    if (bullet) {
+      if (current) bullets.push(current);
+      current = bullet[1].trim();
+    } else if (current && /^\s+\S/.test(line)) {
+      current += ' ' + line.trim();
+    } else if (current && !line.trim()) {
+      bullets.push(current);
+      current = null;
+    }
+  }
+  if (current) bullets.push(current);
+
+  return bullets
+    .map((bullet) => bullet.replace(/^(?:❌|✅)\s*/, '').trim())
+    .filter(Boolean);
+}
+
+function rulesFromSections(match: RegExp): SkillRule[] {
+  const rules: SkillRule[] = [];
+  for (const skill of SKILLS) {
+    for (const section of sections(skill)) {
+      if (!match.test(section.heading)) continue;
+      for (const text of bulletsOf(section.text)) {
+        rules.push({ skill: skill.name, text });
+      }
+    }
+  }
+  return rules;
+}
+
+/** Every bullet under a "Do Not" heading, across all skills. */
+export function doNotRules(): SkillRule[] {
+  return rulesFromSections(/^do not$/i);
+}
+
+/** Every bullet under a "best practices" heading, across all skills. */
+export function bestPracticeRules(): SkillRule[] {
+  return rulesFromSections(/best practices/i);
+}
+
 let vocabularyCache: string[] | null = null;
 
 /**
