@@ -1,3 +1,19 @@
+### Tests (acceptance)
+
+* **acceptance:** new `test/acceptance-hero.test.ts` exercises the whole
+  product for one real scenario — an agency asking for an interactive hero
+  section. It talks to the built server over stdio through the MCP protocol,
+  takes the generated code verbatim, validates it with the server's own
+  checker, then composes the two components a real hero needs into one React
+  page and mounts it in Chromium.
+* Covers what no other suite did: two generated components on one page, each
+  with its own `useGSAP` and `gsap.matchMedia()`, neither allowed to animate
+  the other's elements.
+* Also asserts the agency-facing bar — the CTA is a real `<button>`, the
+  interaction answers keyboard focus and not only the pointer, reduced motion
+  leaves the hero readable and still, and unmounting leaves no live tweens.
+* 696 → 708 tests.
+
 ### Bug Fixes (React verification)
 
 * **generators:** inline `style="..."` attributes in a pattern's markup are now
