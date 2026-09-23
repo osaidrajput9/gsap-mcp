@@ -359,18 +359,23 @@ function checkUseGsap(
     const args = code.slice(call.argsStart, call.argsEnd);
     if (/\bscope\s*:/.test(args)) continue;
 
-    // A selector string inside the callback makes the missing scope a real
-    // bug, not just a missed recommendation.
-    const usesSelectors = /["'`]\s*[.#][A-Za-z_-]/.test(args);
+    // `scope` confines selector STRINGS to a root. A callback that animates
+    // element refs resolves no selectors, so there is nothing for scope to
+    // confine and nothing to warn about — the rule this finding cites is
+    // itself about targeting by selector.
+    //
+    // Reported as a false positive on a component animating only refs. It
+    // fired on every such component, which is the kind of noise that teaches
+    // people to stop reading the validator.
+    if (!/["'`]\s*[.#][A-Za-z_-]/.test(args)) continue;
 
     add(call.start, {
       id: 'usegsap-without-scope',
-      severity: usesSelectors ? 'error' : 'warning',
+      severity: 'error',
       skill: 'gsap-react',
       rule: 'Target by selector without a scope; always pass scope (ref or element) in useGSAP or gsap.context() so selectors like .box are limited to that root and do not match elements outside the component.',
-      message: usesSelectors
-        ? '`useGSAP()` has no `scope`, and its callback uses selector strings — these will match elements anywhere in the document, including other instances of this component.'
-        : '`useGSAP()` has no `scope`.',
+      message:
+        '`useGSAP()` has no `scope`, and its callback uses selector strings — these will match elements anywhere in the document, including other instances of this component.',
       suggestion:
         'Pass the container ref: `useGSAP(() => { ... }, { scope: container })`.',
     });
