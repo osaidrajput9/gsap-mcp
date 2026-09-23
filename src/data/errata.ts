@@ -53,9 +53,15 @@ export const ERRATA: readonly Erratum[] = Object.freeze([
     kind: 'correction',
     skill: 'gsap-scrolltrigger',
     terms: ['refreshPriority', 'refresh', 'sort'],
-    quotes: ['Lower = refreshed first', 'first on page = lower number'],
+    quotes: [
+      'Lower = refreshed first',
+      'first on page = lower number',
+      // The same advice is repeated in the best-practice list further down, so
+      // a fix to the property table alone still leaves it wrong.
+      'first section on page = lower number',
+    ],
     says:
-      'The ScrollTrigger property table states "Lower = refreshed first", and advises setting the first trigger on the page to a lower number.',
+      'The ScrollTrigger property table states "Lower = refreshed first" and advises giving the first trigger on the page the lower number, and the best-practice list repeats that advice.',
     actually:
       'Higher refreshPriority refreshes first. ScrollTrigger.sort multiplies refreshPriority by -1e6 before comparing, so a larger value sorts earlier. To refresh in page order, give the first trigger on the page the HIGHEST number — the opposite of what the skill advises. (ScrollSmoother\'s -9999 is not a counter-example: that exact value is a sentinel that makes it the `_primary` instance, updated through a separate path rather than by sort order.)',
     evidence:
