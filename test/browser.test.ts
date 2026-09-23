@@ -442,6 +442,103 @@ describe.skipIf(!canRun)('generated snippets in a real browser', () => {
     }
   }, 45_000);
 
+  it('scroll-text-fill fills words one after another, locked to scroll', async () => {
+    const page = await open('scroll-text-fill', { tall: true });
+    try {
+      await page.waitForFunction(() => window.__ready === true);
+      await page.waitForTimeout(300);
+
+      // Drive scroll to the ScrollTrigger's OWN start, midpoint and end rather
+      // than to guessed pixel offsets, so markup height cannot break this.
+      const range = await page.evaluate(() => {
+        const [st] = (window.__ScrollTrigger!.getAll() as unknown as Array<{
+          start: number;
+          end: number;
+        }>);
+        return { start: st.start, end: st.end };
+      });
+      expect(range.end).toBeGreaterThan(range.start);
+
+      const wordOpacities = () =>
+        page.evaluate(() =>
+          [...document.querySelectorAll('.fill-text div')].map((node) =>
+            Number(getComputedStyle(node).opacity),
+          ),
+        );
+      const scrollTo = async (y: number) => {
+        await page.evaluate((top) => window.scrollTo(0, top), y);
+        await page.waitForTimeout(250);
+      };
+
+      // Before the start: split into words, every one dim — but never hidden.
+      await scrollTo(Math.max(0, range.start - 200));
+      const before = await wordOpacities();
+      expect(before.length).toBeGreaterThan(5);
+      for (const opacity of before) {
+        expect(opacity).toBeCloseTo(0.2, 1);
+      }
+
+      // Midway: the fill has reached some words and not others, and it runs
+      // in reading order — the first word is at least as full as the last.
+      await scrollTo((range.start + range.end) / 2);
+      const middle = await wordOpacities();
+      expect(Math.max(...middle)).toBeGreaterThan(0.9);
+      expect(Math.min(...middle)).toBeLessThan(0.3);
+      expect(middle[0]).toBeGreaterThanOrEqual(middle[middle.length - 1]);
+
+      // Past the end: every word full.
+      await scrollTo(range.end + 200);
+      for (const opacity of await wordOpacities()) {
+        expect(opacity).toBeCloseTo(1, 1);
+      }
+
+      // Back up: it empties again. This is what distinguishes a scrubbed fill
+      // from a reveal that plays once on enter — the gap in the catalog.
+      await scrollTo(Math.max(0, range.start - 200));
+      for (const opacity of await wordOpacities()) {
+        expect(opacity).toBeCloseTo(0.2, 1);
+      }
+
+      // Screen readers get the whole sentence, not the fragments.
+      expect(
+        await page.evaluate(() =>
+          document.querySelector('.fill-text')!.getAttribute('aria-label'),
+        ),
+      ).toBeTruthy();
+      expect(await page.evaluate(() => window.__errors)).toEqual([]);
+    } finally {
+      await page.close();
+    }
+  }, 60_000);
+
+  it('scroll-text-fill leaves text whole and full-strength under reduced motion', async () => {
+    const page = await open('scroll-text-fill', {
+      tall: true,
+      reducedMotion: 'reduce',
+    });
+    try {
+      await page.waitForFunction(() => window.__ready === true);
+      await page.waitForTimeout(300);
+
+      const state = await page.evaluate(() => {
+        const text = document.querySelector('.fill-text')!;
+        return {
+          fragments: text.querySelectorAll('div').length,
+          opacity: Number(getComputedStyle(text).opacity),
+          triggers: window.__ScrollTrigger!.getAll().length,
+        };
+      });
+
+      // Never split, never dimmed, nothing listening to scroll.
+      expect(state.fragments).toBe(0);
+      expect(state.opacity).toBe(1);
+      expect(state.triggers).toBe(0);
+      expect(await page.evaluate(() => window.__errors)).toEqual([]);
+    } finally {
+      await page.close();
+    }
+  }, 45_000);
+
   it('text-reveal splits the heading and masks the lines', async () => {
     const page = await open('text-reveal');
     try {

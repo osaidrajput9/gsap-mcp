@@ -1,3 +1,30 @@
+### Features
+
+* **patterns:** `scroll-text-fill` — a paragraph split into words that start
+  dim and fill in one after another, scrubbed to scroll position, so it empties
+  again on the way back up. Requested after a build needed the effect and found
+  the catalog's only text pattern, `text-reveal`, plays once on enter and
+  cannot express it. Built from gsap-plugins and gsap-scrolltrigger: SplitText
+  with `autoSplit`, the tween created and returned inside `onSplit()` so a
+  re-split rebuilds it and its ScrollTrigger together, `scrub` with
+  `ease: "none"`, and the stagger spread across the scroll distance. The dim
+  state is set by `fromTo()` rather than CSS, so reduced motion and a failed
+  script both leave the text whole and full-strength.
+
+### Tests
+
+* **browser:** the fill is asserted by behaviour, not by construction. Scroll
+  is driven to the ScrollTrigger's own computed start, midpoint and end:
+  every word dim before, the fill part-way and in reading order at the
+  midpoint, every word full after, and dim again on the way back. Verified
+  against the gap it closes — swapping `scrub` for a play-once
+  `toggleActions`, the same shape as `text-reveal`, fails it.
+* **browser:** under reduced motion the text is never split, never dimmed, and
+  no ScrollTrigger is created.
+* 753 -> 800 tests. The pattern joins all six frameworks automatically, so
+  it is parsed, round-tripped through the validator, and mounted like the
+  rest.
+
 ### Bug Fixes (reported from real use)
 
 * **skills:** the ScrollTrigger skill states `refreshPriority` is "Lower =

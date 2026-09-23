@@ -128,8 +128,14 @@ text. None writes to disk, spawns a process, or makes a network request.
 ### Patterns
 
 `scroll-reveal`, `parallax`, `pinned-section`, `horizontal-scroll`,
-`text-reveal`, `timeline-sequence`, `hover-interaction`, `draggable`,
-`loading-sequence`, `page-transition`, `data-viz`, `smooth-scroll-lenis`.
+`text-reveal`, `scroll-text-fill`, `timeline-sequence`, `hover-interaction`,
+`draggable`, `loading-sequence`, `page-transition`, `data-viz`,
+`smooth-scroll-lenis`.
+
+The two text patterns differ in the one way that matters: `text-reveal`
+slides lines in **once** when they enter, while `scroll-text-fill` fills words
+in **locked to the scrollbar**, emptying again on the way back up. Pick the
+second for the "text lights up as you read" effect.
 
 Each renders for `react`, `nextjs`, `vue`, `nuxt`, `svelte` or `vanilla`.
 
@@ -248,7 +254,7 @@ npm test          # builds first, then runs Vitest
 npm run test:watch
 ```
 
-727 tests. The suite parses all 72 pattern × framework combinations,
+800 tests. The suite parses all 78 pattern × framework combinations,
 round-trips the generated code back through `validate_gsap_code`, and drives
 the built server over a real stdio subprocess. GreenSock's own `examples/` are
 vendored as fixtures: if the validator reports an error on that code, the
