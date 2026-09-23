@@ -10,6 +10,7 @@
 
 import { doNotRules, findSections, matchSkills } from '../lib/skill-search.js';
 import { SKILL_URI_PREFIX } from '../resources/skills.js';
+import { withErrata } from '../data/errata.js';
 
 export interface DebugToolInput {
   issue: string;
@@ -95,7 +96,7 @@ export function debugAnimationIssue({
     );
   }
 
-  return lines.join('\n').trimEnd();
+  return withErrata(lines, issue).trimEnd();
 }
 
 /** Scores "Do Not" rules against the issue text and any supplied code. */

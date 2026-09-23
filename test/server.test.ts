@@ -85,7 +85,7 @@ describe('MCP server', () => {
 
   it('exposes one resource per skill, plus the index and the license', async () => {
     const { resources } = await client.listResources();
-    expect(resources).toHaveLength(SKILLS.length + 2);
+    expect(resources).toHaveLength(SKILLS.length + 3); // index, license, errata
 
     const uris = resources.map((resource) => resource.uri);
     expect(uris).toContain('gsap://skills/index');
@@ -188,7 +188,7 @@ describe('over a real stdio transport', () => {
         );
 
         const { resources } = await client.listResources();
-        expect(resources).toHaveLength(SKILLS.length + 2);
+        expect(resources).toHaveLength(SKILLS.length + 3); // index, license, errata
 
         // The skills must have been copied into dist/, not just compiled.
         const core = await client.readResource({

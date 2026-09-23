@@ -78,6 +78,26 @@ describe('validate_gsap_code checks', () => {
     ).toEqual([]);
   });
 
+  it('stays quiet on a useGSAP that animates only refs', () => {
+    // Reported as a false positive. `scope` confines selector STRINGS to a
+    // root; a callback holding no selectors has nothing to confine, so the
+    // finding was firing on every ref-only component — noise that teaches
+    // people to stop reading the validator.
+    const refsOnly = [
+      'import { useGSAP } from "@gsap/react";',
+      'gsap.registerPlugin(useGSAP);',
+      'useGSAP(() => {',
+      '  gsap.to(titleRef.current, { autoAlpha: 1 });',
+      '  gsap.from(imageRef.current, { y: 40 });',
+      '});',
+    ].join('\n');
+    expect(ids(refsOnly, 'Hero.jsx')).not.toContain('usegsap-without-scope');
+
+    // The real case must still fire, at error severity.
+    const withSelector = refsOnly.replace('titleRef.current', '".title"');
+    expect(ids(withSelector, 'Hero.jsx')).toContain('usegsap-without-scope');
+  });
+
   it('flags useGSAP that was never registered', () => {
     expect(
       ids(

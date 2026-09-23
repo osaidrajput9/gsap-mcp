@@ -15,6 +15,7 @@
 import { LLMS_TXT, SKILLS } from '../data/skills.js';
 import { matchSkills, type SkillMatch } from '../lib/skill-search.js';
 import { SKILL_URI_PREFIX } from '../resources/skills.js';
+import { withErrata } from '../data/errata.js';
 
 export interface GuidanceToolInput {
   topic: string;
@@ -96,7 +97,7 @@ export function getGsapGuidance({
       LLMS_TXT.trim(),
       '```',
     );
-    return lines.join('\n');
+    return withErrata(lines, query);
   }
 
   const count = Math.max(1, Math.min(max_skills, SKILLS.length));
@@ -113,5 +114,5 @@ export function getGsapGuidance({
     );
   }
 
-  return lines.join('\n');
+  return withErrata(lines, query);
 }

@@ -11,6 +11,7 @@
 import { getSkill } from '../data/skills.js';
 import { bestPracticeRules, sections } from '../lib/skill-search.js';
 import { SKILL_URI_PREFIX } from '../resources/skills.js';
+import { withErrata } from '../data/errata.js';
 
 export const OPTIMIZE_TARGETS = [
   '60fps-desktop',
@@ -95,5 +96,5 @@ export function optimizeForPerformance({
     `- \`${SKILL_URI_PREFIX}gsap-scrolltrigger\``,
   );
 
-  return lines.join('\n');
+  return withErrata(lines, animation_code);
 }

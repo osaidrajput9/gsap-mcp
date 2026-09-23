@@ -159,6 +159,7 @@ plugin is ScrollSmoother.
 | :--- | :--- |
 | `gsap://skills/index` | The upstream `llms.txt` discovery index, plus provenance |
 | `gsap://skills/license` | GreenSock's MIT license for the vendored files |
+| `gsap://skills/errata` | Where the official skills are wrong, and what GSAP actually does |
 | `gsap://skills/gsap-core` | Tweens, easing, stagger, transforms, `matchMedia` |
 | `gsap://skills/gsap-timeline` | Timelines, position parameter, labels, nesting |
 | `gsap://skills/gsap-scrolltrigger` | ScrollTrigger: pinning, scrub, batch, refresh |
@@ -168,7 +169,32 @@ plugin is ScrollSmoother.
 | `gsap://skills/gsap-performance` | Transforms, `quickTo`, batching |
 | `gsap://skills/gsap-utils` | `clamp`, `mapRange`, `snap`, `toArray`, `distribute` |
 
-Each is the SKILL.md byte-for-byte, frontmatter included.
+Each is the SKILL.md byte-for-byte, frontmatter included — **including the
+parts known to be wrong**. A vendored skill is worth serving because it is
+provably GreenSock's text and not ours; annotating the body would end that.
+
+Corrections live beside it instead, in `src/data/errata.ts`. Every tool that
+quotes a skill appends the entries that apply to what it returned, the
+affected resource says so in its description, and `gsap://skills/errata` lists
+them all. Each entry records how it was established — by running GSAP, not by
+reading it.
+
+`test/errata.test.ts` ties every entry to the text it describes: a correction's
+quotes must still appear upstream, and a documented gap's pattern must still
+match nothing. When GreenSock fixes something, that test fails and names the
+entry to delete, so a correction cannot outlive its error and become a second
+source of wrong answers.
+
+Currently two entries, both verified against GSAP 3.15.0:
+
+- **`refresh-priority-direction`** — the ScrollTrigger table says
+  `refreshPriority` is "Lower = refreshed first". It is the opposite:
+  `ScrollTrigger.sort` multiplies the value by `-1e6`, so higher refreshes
+  first. The skill's practical advice is backwards too. Reported by a user
+  after it caused two bugs.
+- **`stagger-function-form`** — the skills document `stagger` as a number and
+  as an object, never as a function. `(index, target, targets) => seconds`
+  works and is the form to reach for when the offset depends on the element.
 
 ## Structure
 

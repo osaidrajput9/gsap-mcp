@@ -10,6 +10,7 @@
 import { SKILLS } from '../data/skills.js';
 import { findSections, matchSkills, suggestApiTerms } from '../lib/skill-search.js';
 import { SKILL_URI_PREFIX } from '../resources/skills.js';
+import { withErrata } from '../data/errata.js';
 
 export const API_EXPERT_LEVELS = [
   'basic',
@@ -81,7 +82,7 @@ export function gsapApiExpert({
     '',
   );
 
-  return lines.join('\n');
+  return withErrata(lines, term);
 }
 
 function notFound(term: string): string[] {

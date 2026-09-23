@@ -1,3 +1,40 @@
+### Bug Fixes (reported from real use)
+
+* **skills:** the ScrollTrigger skill states `refreshPriority` is "Lower =
+  refreshed first". It is the opposite — `ScrollTrigger.sort` multiplies the
+  value by `-1e6`, so a higher number refreshes first — and its practical
+  advice ("first on page = lower number") is backwards with it. Reported by a
+  user after it caused two bugs they later traced back to this server.
+  Confirmed in Chromium with GSAP 3.15.0: three ScrollTriggers with priorities
+  0, -10 and 10 fired `onRefresh` in the order 10, 0, -10.
+* **validate:** `usegsap-without-scope` fired at warning level on components
+  that animate only element refs. `scope` confines selector strings to a root,
+  so with no selectors there is nothing to confine — the finding was
+  contradicting the rule it cited, and firing on every ref-only component.
+  It now reports only when selector strings are present.
+
+### Features
+
+* **errata:** corrections to the official skills now live in
+  `src/data/errata.ts` rather than in the vendored files, which are replaced
+  wholesale by the weekly sync and are worth serving precisely because they
+  are provably upstream. Every tool that quotes a skill appends the entries
+  that apply to what it returned, affected resources say so in their
+  description, and `gsap://skills/errata` lists them all. SKILL.md resources
+  stay byte-for-byte, errors included.
+* **errata:** a documented gap for function-based `stagger`. The skills cover
+  the number and object forms only; `(index, target, targets) => seconds` also
+  works, verified by running it.
+
+### Tests
+
+* **errata:** `test/errata.test.ts` ties each entry to the text it describes —
+  a correction's quotes must still appear upstream, a gap's pattern must still
+  match nothing. When upstream fixes something the test fails and names the
+  entry to delete, so a correction cannot rot into a second source of wrong
+  answers. Verified by rewriting a quote: the guard fails with that message.
+* 740 -> 753 tests.
+
 ### Published
 
 * **npm:** released as `@osaidrajput9/gsap-mcp@2.0.0`. `private: true` is
