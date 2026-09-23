@@ -22,6 +22,7 @@ export const PATTERNS = [
   'pinned-section',
   'horizontal-scroll',
   'text-reveal',
+  'scroll-text-fill',
   'timeline-sequence',
   'hover-interaction',
   'draggable',
@@ -337,6 +338,72 @@ return () => split.revert();`,
     Text that is readable before, during and after the animation.
   </h1>
 </div>`,
+    ),
+  }),
+};
+
+const scrollTextFill: Pattern = {
+  id: 'scroll-text-fill',
+  title: 'Word-by-word text fill scrubbed to scroll (SplitText + ScrollTrigger)',
+  summary:
+    'Splits a paragraph into words that start dim and fill in, one after another, locked to scroll position — forwards when scrolling down, backwards when scrolling up.',
+  skills: ['gsap-plugins', 'gsap-scrolltrigger', 'gsap-core'],
+  notes: [
+    'SplitText.create() with autoSplit, and the tween built and returned inside onSplit(), so a re-split on font load or resize rebuilds the tween and its ScrollTrigger against the new word elements (gsap-plugins).',
+    'Only words are split — "Only split what is needed ... for performance" (gsap-plugins).',
+    'scrub ties progress to scroll position, and ease: "none" keeps it linear; any other ease desynchronises the fill from the scrollbar (gsap-scrolltrigger).',
+    'The stagger is spread across the scrub distance, which is what makes words fill one after another rather than all at once (gsap-core).',
+    'The dim state is set by fromTo(), never by CSS, so reduced motion and a failed script both leave the text at full strength.',
+    'opacity rather than autoAlpha: the floor is 0.2, never 0, and autoAlpha only differs from opacity at 0 (gsap-core).',
+    'aria defaults to "auto": the paragraph carries its full text as a label and the word fragments are hidden from screen readers, so the dim state is purely visual (gsap-plugins).',
+  ],
+  build: (framework) => ({
+    framework,
+    componentName: 'ScrollTextFill',
+    plugins: ['SplitText', 'ScrollTrigger'],
+    body: `if (reduceMotion) {
+  // Leave the text at full strength. Nothing is split, so nothing needs
+  // reverting, and the words were never dimmed because CSS does not dim them.
+  return;
+}
+
+const split = SplitText.create(".fill-text", {
+  type: "words",     // only what the effect needs
+  autoSplit: true,   // re-split on font load and width change
+  onSplit(self) {
+    // Built inside onSplit so it always targets the current word elements,
+    // and returned so SplitText kills it — ScrollTrigger included — before
+    // building the replacement on a re-split.
+    return gsap.fromTo(
+      self.words,
+      { opacity: 0.2 },  // dim, but still legible
+      {
+        opacity: 1,
+        ease: "none",    // required: scrubbed animations must be linear
+        stagger: 0.1,    // spread across the scroll distance
+        scrollTrigger: {
+          trigger: ".scroll-text-fill",
+          start: "top 80%",     // begins as the paragraph enters the lower screen
+          end: "bottom 50%",    // fully filled once it reaches the middle
+          scrub: true,
+        },
+      },
+    );
+  },
+});
+
+// Reverting restores the original markup; the shell's teardown covers the
+// tween and its ScrollTrigger, this covers the DOM SplitText created.
+return () => split.revert();`,
+    markup: markup(
+      framework,
+      `<section class="scroll-text-fill">
+  <p class="fill-text">
+    Every word fills in as it scrolls into view, and empties again on the way
+    back up, because its progress is tied to the scrollbar rather than played
+    once.
+  </p>
+</section>`,
     ),
   }),
 };
@@ -673,6 +740,7 @@ const CATALOG: Record<PatternId, Pattern> = {
   'pinned-section': pinnedSection,
   'horizontal-scroll': horizontalScroll,
   'text-reveal': textReveal,
+  'scroll-text-fill': scrollTextFill,
   'timeline-sequence': timelineSequence,
   'hover-interaction': hoverInteraction,
   draggable,
